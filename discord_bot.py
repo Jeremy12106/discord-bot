@@ -35,6 +35,11 @@ async def ping(ctx):
     async with ctx.typing():
         await ctx.send(f"Pong! 延遲為 {round(bot.latency * 1000)}ms")
 
+@bot.command(name = "燒魚")
+async def sauyu(ctx):
+    async with ctx.typing():
+        await ctx.send("燒魚燒魚燒魚")
+
 @bot.command(name = "捷運")
 async def mrt_select(ctx, line: str):
     """根據捷運線名稱隨機選擇一個站點並發送"""
@@ -43,7 +48,7 @@ async def mrt_select(ctx, line: str):
         await ctx.send(message)
 
 @bot.command(name = "拉麵")
-async def mrt_select(ctx, line: str):
+async def ramen_select(ctx, line: str):
     """根據捷運線名稱隨機選擇一個站點並發送"""
     async with ctx.typing():
         message = mrt.recommend_ramen(line)
