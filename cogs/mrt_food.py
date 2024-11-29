@@ -1,8 +1,9 @@
-
 import os
 import json
 import random
 import urllib.parse
+from discord.ext import commands
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class MRT:
@@ -19,9 +20,6 @@ class MRT:
             "綠線": "green_line", "松山新店線": "green_line",
             "橘線": "orange_line", "中和新蘆線": "orange_line"
         }
-
-    def get_line_aliases(self):
-        return list(self.line_mapping.keys())
 
     def load_stations(self):
         """載入捷運線對應的站資料"""
@@ -48,10 +46,8 @@ class MRT:
 
     def recommend_ramen(self, station_name):
         """根據站名名稱推薦拉麵店"""
-        # 遍歷所有捷運線，檢查每條線的每個站點是否包含該站名
         for line, stations in self.stations.items():
             if station_name in stations:
-                # 找到站點後，從對應的拉麵店推薦資料中返回該站點的推薦
                 line = self.line_mapping.get(line)
                 ramen_list = self.ramen_shops[line].get(station_name)
                 if ramen_list:
@@ -62,22 +58,28 @@ class MRT:
                     return f"{station_name}還沒有推薦的拉麵店。"
         return f"我只知道台北拉麵的資訊"
 
-if __name__ == "__main__":
-    
-    mrt = MRT()
 
-    # 假設用戶選擇了紅線
-    line = '淡水信義線'
+# MRTCog 類別，包含相關命令
+class MRTCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.mrt = MRT()  # 創建 MRT 類別實例
 
-    # 隨機取得紅線上的捷運站
-    random_station = mrt.get_random_station(line)
-    print(f"隨機捷運站 ({line}): {random_station}")
+    @commands.command(name="捷運")
+    async def mrt_select(self, ctx, line: str):
+        """根據捷運線名稱隨機選擇一個站點並發送"""
+        async with ctx.typing():
+            message = self.mrt.get_random_station(line)
+            await ctx.send(message)
 
-    # 根據捷運站名稱推薦拉麵店
-    ramen_recommendation = mrt.recommend_ramen(random_station)
-    print(f"推薦的拉麵店: {ramen_recommendation}")
+    @commands.command(name="拉麵")
+    async def ramen_select(self, ctx, line: str):
+        """根據捷運線名稱隨機選擇一個站點並發送"""
+        async with ctx.typing():
+            message = self.mrt.recommend_ramen(line)
+            await ctx.send(message)
 
-
-
-
-
+# 註冊並加載 MRTCog
+async def setup(bot):
+    await bot.add_cog(MRTCog(bot))
+    print("MRT food 功能載入成功！")

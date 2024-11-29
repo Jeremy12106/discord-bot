@@ -1,12 +1,9 @@
 import os
 import discord
+import asyncio
 from dotenv import load_dotenv
 from discord.ext import commands
 
-from feature.gemini_api import get_response
-from feature.mrt_food import MRT
-
-mrt = MRT()
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -28,7 +25,7 @@ async def on_ready():
 @bot.command(name = "哈囉")
 async def hello(ctx):
     async with ctx.typing():
-        await ctx.send("哈囉! 我是你最好的朋友！")
+        await ctx.send("哈囉！我是你最好的朋友！")
 
 @bot.command()
 async def ping(ctx):
@@ -40,37 +37,19 @@ async def sauyu(ctx):
     async with ctx.typing():
         await ctx.send("燒魚燒魚燒魚")
 
-@bot.command(name = "捷運")
-async def mrt_select(ctx, line: str):
-    """根據捷運線名稱隨機選擇一個站點並發送"""
-    async with ctx.typing():
-        message = mrt.get_random_station(line)
-        await ctx.send(message)
+# 載入功能
+async def load_extensions():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            await bot.load_extension(f"cogs.{filename[:-3]}")
 
-@bot.command(name = "拉麵")
-async def ramen_select(ctx, line: str):
-    """根據捷運線名稱隨機選擇一個站點並發送"""
-    async with ctx.typing():
-        message = mrt.recommend_ramen(line)
-        await ctx.send(message)
+async def main():
+    async with bot:
+        await load_extensions()
+        await bot.start(TOKEN)
 
-# LLM輸入：如果用戶輸入的不是已定義的指令
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
-        user_input = ctx.message.content[len(ctx.prefix):].strip()
-        # 使用 async with ctx.typing() 顯示正在輸入的狀態
-        async with ctx.typing():
-            response = get_response(user_input)  # 使用 LLM 處理輸入
-            if response:
-                await ctx.send(response)
-            else:
-                await ctx.send("抱歉..我無法處理這個訊息。")
-    else:
-        raise error
-
-# 啟動機器人
-if TOKEN:
-    bot.run(TOKEN)
-else:
-    print("未找到 Discord Token，請檢查 .env 檔案！")
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("關閉機器人...")
