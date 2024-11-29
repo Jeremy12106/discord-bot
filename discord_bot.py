@@ -2,8 +2,11 @@ import os
 import discord
 from dotenv import load_dotenv
 from discord.ext import commands
-from gemini_api import get_response
 
+from feature.gemini_api import get_response
+from feature.mrt_food import MRT
+
+mrt = MRT()
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -19,6 +22,9 @@ bot = commands.Bot(command_prefix="豆白 ", intents=intents)
 async def on_ready():
     print(f"已成功登入為 {bot.user}！")
 
+    game = discord.Game('正在玩 沙威玛传奇')
+    await bot.change_presence(status=discord.Status.idle, activity=game)
+
 @bot.command()
 async def hello(ctx):
     async with ctx.typing():
@@ -28,6 +34,20 @@ async def hello(ctx):
 async def ping(ctx):
     async with ctx.typing():
         await ctx.send(f"Pong! 延遲為 {round(bot.latency * 1000)}ms")
+
+@bot.command(name = "捷運")
+async def mrt_select(ctx, line: str):
+    """根據捷運線名稱隨機選擇一個站點並發送"""
+    async with ctx.typing():
+        message = mrt.get_random_station(line)
+        await ctx.send(message)
+
+@bot.command(name = "拉麵")
+async def mrt_select(ctx, line: str):
+    """根據捷運線名稱隨機選擇一個站點並發送"""
+    async with ctx.typing():
+        message = mrt.recommend_ramen(line)
+        await ctx.send(message)
 
 # LLM輸入：如果用戶輸入的不是已定義的指令
 @bot.event
