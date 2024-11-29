@@ -22,8 +22,8 @@ bot = commands.Bot(command_prefix="豆白 ", intents=intents)
 async def on_ready():
     print(f"已成功登入為 {bot.user}！")
 
-    game = discord.Game('正在玩 沙威玛传奇')
-    await bot.change_presence(status=discord.Status.idle, activity=game)
+    game = discord.Game('沙威玛传奇')
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
 @bot.command()
 async def hello(ctx):
