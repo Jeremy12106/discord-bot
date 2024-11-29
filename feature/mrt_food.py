@@ -2,6 +2,7 @@
 import os
 import json
 import random
+import urllib.parse
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class MRT:
@@ -54,7 +55,9 @@ class MRT:
                 line = self.line_mapping.get(line)
                 ramen_list = self.ramen_shops[line].get(station_name)
                 if ramen_list:
-                    return f"{random.choice(ramen_list)}好吃"
+                    ramen = random.choice(ramen_list)
+                    query = urllib.parse.quote(f"{station_name} {ramen} 拉麵")
+                    return f"{ramen}好吃\nhttps://www.google.com/search?q={query}"
                 else:
                     return f"{station_name}還沒有推薦的拉麵店。"
         return f"我只知道台北拉麵的資訊"

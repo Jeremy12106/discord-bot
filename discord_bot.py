@@ -25,7 +25,7 @@ async def on_ready():
     game = discord.Game('沙威玛传奇')
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-@bot.command()
+@bot.command(name = "哈囉")
 async def hello(ctx):
     async with ctx.typing():
         await ctx.send("哈囉! 我是你最好的朋友！")
