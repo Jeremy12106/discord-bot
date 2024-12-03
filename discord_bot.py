@@ -39,6 +39,33 @@ async def ping(ctx):
         logger.info(f"[Ping] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response}")
         await ctx.send(response)
 
+@bot.command()
+async def help(ctx):
+    async with ctx.typing():
+        """
+        提供可用指令的清單和簡要說明。
+        """
+        help_message = """
+        **豆白指令清單：**
+        - 前綴: "豆白"
+
+        **捷運 [線名]**
+        - 不知道去哪，豆白帶你去
+        
+        **拉麵 [捷運站名]**
+        - 推薦好吃拉麵給你
+
+        **choose [複數選項(空白間隔)]**
+        - 幫你做選擇
+
+        **play [YouTube-URL]**
+        - 播放指定的 YouTube 音樂。
+        
+        **mygo [台詞]**
+        - 畢竟是一輩子的事
+        """
+        await ctx.send(help_message)
+
 @bot.command(name = "燒魚")
 async def sauyu(ctx):
     async with ctx.typing():
