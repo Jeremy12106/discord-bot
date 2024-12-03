@@ -1,0 +1,16 @@
+.env
+**/__pycache__/
+assets/
+log/
+README.md
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+.docker
+.dockerignore
