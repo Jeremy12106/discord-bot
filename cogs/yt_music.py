@@ -5,6 +5,7 @@ from pytubefix import YouTube
 from pytubefix.cli import on_progress
 from discord.ext import commands
 from discord import FFmpegPCMAudio
+from loguru import logger
 
 # 定義每個伺服器的播放清單
 guild_queues = {}
@@ -26,7 +27,7 @@ class YTMusic(commands.Cog):
 
     @commands.command()
     async def play(self, ctx, url: str = ""):
-
+        
         # 檢查使用者是否已在語音頻道
         if ctx.author.voice:
             channel = ctx.author.voice.channel
@@ -40,6 +41,7 @@ class YTMusic(commands.Cog):
         if url:
             await self.add_to_queue(ctx, url)
         
+        logger.info(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {url:None}")
         # 播放音樂
         voice_client = ctx.voice_client
         if not voice_client.is_playing():
