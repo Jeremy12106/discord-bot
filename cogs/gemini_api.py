@@ -1,8 +1,9 @@
 import os
+import absl.logging
 import google.generativeai as genai
+from loguru import logger
 from discord.ext import commands
 from dotenv import load_dotenv
-import absl.logging
 
 # 設定 Google API 日誌級別
 absl.logging.set_verbosity('fatal')
@@ -31,6 +32,7 @@ class LLMCommands(commands.Cog):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
                 response = self.get_response(user_input)  # 使用 LLM 處理輸入
+                logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response[:100]}")
                 if response:
                     await ctx.send(response)
                 else:
