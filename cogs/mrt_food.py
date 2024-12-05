@@ -2,6 +2,7 @@ import os
 import json
 import random
 import urllib.parse
+from loguru import logger
 from discord.ext import commands
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +41,7 @@ class MRT:
     def get_random_station(self, line):
         """隨機選擇某條捷運線上的一個站"""
         if line in self.stations:
-            return f"{random.choice(self.stations[line])}好玩"
+            return f"{random.choice(self.stations[line])}"
         else:
             return "?"
 
@@ -82,4 +83,4 @@ class MRTCog(commands.Cog):
 # 註冊並加載 MRTCog
 async def setup(bot):
     await bot.add_cog(MRTCog(bot))
-    print("MRT food 功能載入成功！")
+    logger.info("MRT food 功能載入成功！")
