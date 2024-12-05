@@ -8,8 +8,9 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
+
 log_path = "./log/discord_bot.log"
-level = "INFO"
+level = os.getenv("LOG_LEVEL")
 logger.add(log_path, level = level, format="{time} | {level} | {message}", rotation="10 MB")
 
 intents = discord.Intents.default()
@@ -17,7 +18,7 @@ intents.messages = True
 intents.message_content = True  # 確保機器人能讀取消息內容
 
 # 機器人前綴
-bot = commands.Bot(command_prefix="豆白 ", intents=intents)
+bot = commands.Bot(command_prefix="豆白 ", help_command=None, intents=intents)
 
 # 當機器人啟動時觸發
 @bot.event
@@ -27,7 +28,7 @@ async def on_ready():
     game = discord.Game('沙威玛传奇')
     await bot.change_presence(status=discord.Status.online, activity=game)
 
-@bot.command(name = "哈囉")
+@bot.command()
 async def hello(ctx):
     async with ctx.typing():
         await ctx.send("哈囉！我是你最好的朋友！")
@@ -45,24 +46,30 @@ async def help(ctx):
         """
         提供可用指令的清單和簡要說明。
         """
-        help_message = """
-        **豆白指令清單：**
-        - 前綴: "豆白"
+        help_message = """\
+🌟 **豆白指令清單**
+**前綴**: 豆白
 
-        **捷運 [線名]**
-        - 不知道去哪，豆白帶你去
-        
-        **拉麵 [捷運站名]**
-        - 推薦好吃拉麵給你
+🚇 **捷運 [線名]**
+🔸 隨機一站帶你去
 
-        **choose [複數選項(空白間隔)]**
-        - 幫你做選擇
+🍜 **拉麵 [捷運站名]**
+🔸 推薦好吃拉麵
 
-        **play [YouTube-URL]**
-        - 播放指定的 YouTube 音樂。
-        
-        **mygo [台詞]**
-        - 畢竟是一輩子的事
+☀️ **天氣 [縣市]**
+🔸 查看指定地點的天氣預報
+
+🎲 **choose [選項1 選項2 ...]**
+🔸 幫你做選擇
+
+🔢 **終極密碼**
+🔸 開啟一場刺激的終極密碼遊戲
+
+🎵 **play [YouTube-URL]**
+🔸 播放指定的 YouTube 音樂
+
+🛠️ **mygo [台詞]**
+🔸 畢竟是一輩子的事
         """
         await ctx.send(help_message)
 
