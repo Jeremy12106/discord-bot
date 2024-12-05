@@ -41,7 +41,7 @@ class YTMusic(commands.Cog):
         if url:
             await self.add_to_queue(ctx, url)
         
-        logger.info(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {url:None}")
+        logger.info(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {url or 'None'}")
         # 播放音樂
         voice_client = ctx.voice_client
         if not voice_client.is_playing():
@@ -62,8 +62,10 @@ class YTMusic(commands.Cog):
             
             # 將檔案路徑與標題作為字典加入佇列
             await queue.put({"file_path": file_path, "title": yt.title})
+            logger.debug(f"成功將 {yt.title} 添加到播放清單")
             await ctx.send(f"已添加到播放清單: {yt.title}")
         except Exception as e:
+            logger.debug(f"下載失敗: {e}")
             await ctx.send(f"下載失敗: {e}")
 
     async def play_next(self, ctx):
@@ -73,9 +75,8 @@ class YTMusic(commands.Cog):
         voice_client = ctx.voice_client
         if not voice_client or not voice_client.is_connected():
             return
-
         if not queue.empty():
-            item = await queue.get()  # 從佇列取出字典
+            item = await queue.get()
             file_path = item["file_path"]
             title = item["title"]
             try:
@@ -83,7 +84,7 @@ class YTMusic(commands.Cog):
                     discord.FFmpegPCMAudio(file_path),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(ctx, file_path))
                 )
-                await ctx.send(f"正在播放音樂: {title}")  # 顯示音樂標題
+                await ctx.send(f"正在播放音樂: {title}")
             except Exception as e:
                 await ctx.send(f"播放音樂時出錯: {e}")
                 await self.play_next(ctx)  # 嘗試播放下一首
@@ -153,4 +154,4 @@ class YTMusic(commands.Cog):
 # 加入 cog 到機器人中
 async def setup(bot):
     await bot.add_cog(YTMusic(bot))
-    print("YTMusic 功能載入成功！")
+    logger.info("YTMusic 功能載入成功！")

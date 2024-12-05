@@ -43,4 +43,4 @@ class LLMCommands(commands.Cog):
 # 註冊並加載 Cog
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
-    print("LLM 功能載入成功！")
+    logger.info("LLM 功能載入成功！")
