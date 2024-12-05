@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   discord-bot:
-    image: discord-bot
+    image: discord_bot
     container_name: discord-bot
     env_file:
       - .env
