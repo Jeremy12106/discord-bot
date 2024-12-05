@@ -10,7 +10,6 @@ absl.logging.set_verbosity('fatal')
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"
 
-# 定義 Cog 類別
 class LLMCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -24,6 +23,12 @@ class LLMCommands(commands.Cog):
         prompt = f"[用繁體中文回答] {text}"
         response = self.model.generate_content(prompt)
         return response.text
+    
+    def get_weather_recommendation(self, weather_info):
+        """生成出門建議"""
+        prompt = f"[用繁體中文回答] 根據以下天氣預報資訊，給予一個簡短的出門建議：\n{weather_info}"
+        response = self.model.generate_content(prompt)
+        return response.text
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -32,7 +37,7 @@ class LLMCommands(commands.Cog):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
                 response = self.get_response(user_input)  # 使用 LLM 處理輸入
-                logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response[:100]}")
+                logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
                     await ctx.send(response)
                 else:
@@ -40,7 +45,6 @@ class LLMCommands(commands.Cog):
         else:
             raise error
 
-# 註冊並加載 Cog
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
     logger.info("LLM 功能載入成功！")
