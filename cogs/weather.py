@@ -66,7 +66,8 @@ class Weather(commands.Cog):
                     recommend = self.llm.get_weather_recommendation(weather_message)
                     weather_message += f"💡 **出門建議**：{recommend}"
                     logger.info(f"[Weather] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{weather_message}")
-                    await ctx.send(weather_message)
+                    embed = discord.Embed(title="今日天氣預報", description=weather_message, color=discord.Color.blue())
+                    await ctx.send(embed=embed)
                 except (KeyError, IndexError):
                     error_message = "⚠ 無法取得指定城市的天氣資訊，請確認名稱是否正確。"
                     logger.info(f"[Weather] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {error_message}")
