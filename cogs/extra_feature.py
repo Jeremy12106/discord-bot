@@ -1,6 +1,8 @@
 import random
+import discord
 from loguru import logger
 from discord.ext import commands
+from cogs.gemini_api import LLMCommands
 
 class Feature(commands.Cog):
     def __init__(self, bot):
@@ -72,7 +74,50 @@ class UltimateNumberGame(commands.Cog):
             await ctx.send(f"⚠️ 遊戲已結束！正確答案是 {self.target}。\n下次再來玩吧！")
             self.game_active = False
 
+class SeaTurtleGame(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.llm = LLMCommands(bot)
+    
+    @commands.command(name="海龜湯")
+    async def seaturtle_game(self, ctx, *directions):
+        """
+        生成海龜湯題目，根據使用者指定的多個方向。
+        使用方式: 豆白 海龜湯 [出題方向1] [出題方向2] ...
+        """
+        async with ctx.typing():
+            if not directions:
+                await ctx.send("請至少提供一個出題方向，如：懸疑 恐怖 獵奇")
+                return
+
+            # 將多個方向合併成一個字串
+            direction_str = "、".join(directions)
+
+            try:
+                # 使用 LLMCommands 取得題目與解答
+                result = self.llm.get_seaturtle_question(direction_str)
+                logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{result}")
+
+                if "題目:" in result and "解答:" in result:
+                    parts = result.split("解答:")
+                    question = parts[0].replace("題目:", "").strip()
+                    answer = parts[1].strip()
+
+                    # 輸出題目與暴雷解答
+                    embed = discord.Embed(title="海龜湯題目", description=question, color=discord.Color.blue())
+                    await ctx.send(embed=embed)
+
+                    spoiler_text = f"||{answer}||"  # 暴雷內容
+                    await ctx.send(f"解答（點擊顯示）：\n{spoiler_text}")
+                else:
+                    await ctx.send("生成題目時發生錯誤，請稍後再試。")
+
+            except Exception as e:
+                logger.error(f"發生錯誤：{e}")
+                await ctx.send(f"發生錯誤")
+
 async def setup(bot):
     await bot.add_cog(Feature(bot))
     await bot.add_cog(UltimateNumberGame(bot))
+    await bot.add_cog(SeaTurtleGame(bot))
     logger.info("追加功能載入成功！")
