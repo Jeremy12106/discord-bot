@@ -70,10 +70,12 @@ class Weather(commands.Cog):
                     await ctx.send(embed=embed)
                 except (KeyError, IndexError):
                     error_message = "⚠ 無法取得指定城市的天氣資訊，請確認名稱是否正確。"
-                    logger.info(f"[Weather] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {error_message}")
+                    logger.error(f"[Weather] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {error_message}")
                     await ctx.send(error_message)
             else:
-                await ctx.send("⚠ 天氣服務目前不可用，請稍後再試！")
+                error_message = "⚠ 天氣服務目前不可用，請稍後再試！"
+                logger.error(f"[Weather] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {error_message}")
+                await ctx.send(error_message)
 
 async def setup(bot):
     await bot.add_cog(Weather(bot))

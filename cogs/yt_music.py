@@ -62,10 +62,10 @@ class YTMusic(commands.Cog):
             
             # 將檔案路徑與標題作為字典加入佇列
             await queue.put({"file_path": file_path, "title": yt.title})
-            logger.debug(f"成功將 {yt.title} 添加到播放清單")
+            logger.debug(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
             await ctx.send(f"✔️ 已添加到播放清單: {yt.title}")
         except Exception as e:
-            logger.error(f"下載失敗: {e}")
+            logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 下載失敗: {e}")
             await ctx.send(f"❌ 下載失敗")
 
     async def play_next(self, ctx):
@@ -86,7 +86,7 @@ class YTMusic(commands.Cog):
                 )
                 await ctx.send(f"▶️ 正在播放音樂: {title}")
             except Exception as e:
-                logger.error(f"播放音樂時出錯: {e}")
+                logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 播放音樂時出錯: {e}")
                 await ctx.send(f"❌ 播放音樂時出錯")
                 await self.play_next(ctx)  # 嘗試播放下一首
         else:
@@ -97,7 +97,7 @@ class YTMusic(commands.Cog):
             if os.path.exists(file_path):
                 os.remove(file_path)
         except Exception as e:
-            await print(f"刪除檔案失敗: {e}")
+            logger.warning(f"[音樂] 伺服器 ID: {ctx.guild.id}, 刪除檔案失敗: {e}")
         await self.play_next(ctx)
 
     @commands.Cog.listener()
@@ -106,14 +106,16 @@ class YTMusic(commands.Cog):
         if member.bot and before.channel is not None and after.channel is None:
             guild_id = member.guild.id
             _, folder = get_guild_queue_and_folder(guild_id)
+            logger.info(f"[音樂] 伺服器 ID: {member.guild.id}, 離開語音頻道")
             await asyncio.sleep(2)
             # 刪除所有音檔
             for file in os.listdir(folder):
                 file_path = os.path.join(folder, file)
                 try:
                     os.remove(file_path)
-                except Exception:
-                    pass
+                    logger.info(f"[音樂] 伺服器 ID: {member.guild.id}, 刪除檔案成功！")
+                except Exception as e:
+                    logger.warning(f"[音樂] 伺服器 ID: {member.guild.id}, 刪除檔案失敗: {e}")
             
             # 清空播放隊列
             if guild_id in guild_queues:
