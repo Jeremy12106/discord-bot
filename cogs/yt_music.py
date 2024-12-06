@@ -34,7 +34,7 @@ class YTMusic(commands.Cog):
             if ctx.voice_client is None:  # 檢查機器人是否已在語音頻道
                 await channel.connect()
         else:
-            await ctx.send("請先加入語音頻道！")
+            await ctx.send("❌ 請先加入語音頻道！")
             return
 
         # 如果有提供 URL，將音樂加入播放清單
@@ -63,10 +63,10 @@ class YTMusic(commands.Cog):
             # 將檔案路徑與標題作為字典加入佇列
             await queue.put({"file_path": file_path, "title": yt.title})
             logger.debug(f"成功將 {yt.title} 添加到播放清單")
-            await ctx.send(f"已添加到播放清單: {yt.title}")
+            await ctx.send(f"✔️ 已添加到播放清單: {yt.title}")
         except Exception as e:
-            logger.debug(f"下載失敗: {e}")
-            await ctx.send(f"下載失敗: {e}")
+            logger.error(f"下載失敗: {e}")
+            await ctx.send(f"❌ 下載失敗")
 
     async def play_next(self, ctx):
         guild_id = ctx.guild.id
@@ -84,12 +84,13 @@ class YTMusic(commands.Cog):
                     discord.FFmpegPCMAudio(file_path),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(ctx, file_path))
                 )
-                await ctx.send(f"正在播放音樂: {title}")
+                await ctx.send(f"▶️ 正在播放音樂: {title}")
             except Exception as e:
-                await ctx.send(f"播放音樂時出錯: {e}")
+                logger.error(f"播放音樂時出錯: {e}")
+                await ctx.send(f"❌ 播放音樂時出錯")
                 await self.play_next(ctx)  # 嘗試播放下一首
         else:
-            await ctx.send("播放清單已播放完畢！")
+            await ctx.send("⏹️ 播放清單已播放完畢！")
 
     async def handle_after_play(self, ctx, file_path):
         try:
