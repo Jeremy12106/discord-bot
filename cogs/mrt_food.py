@@ -71,13 +71,15 @@ class MRTCog(commands.Cog):
         """根據捷運線名稱隨機選擇一個站點並發送"""
         async with ctx.typing():
             message = self.mrt.get_random_station(line)
+            logger.info(f"[捷運] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {line}, bot 輸出: {message}")
             await ctx.send(message)
 
     @commands.command(name="拉麵")
-    async def ramen_select(self, ctx, line: str):
+    async def ramen_select(self, ctx, station: str):
         """根據捷運線名稱隨機選擇一個站點並發送"""
         async with ctx.typing():
-            message = self.mrt.recommend_ramen(line)
+            message = self.mrt.recommend_ramen(station)
+            logger.info(f"[拉麵] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {station}, bot 輸出: {message}")
             await ctx.send(message)
 
 # 註冊並加載 MRTCog

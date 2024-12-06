@@ -20,6 +20,7 @@ class Feature(commands.Cog):
 
             # 隨機選擇一個選項
             chosen = random.choice(choices)
+            logger.info(f"[choose] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {choices}, bot 輸出: {chosen}")
             await ctx.send(f"{chosen}")
 
 class UltimateNumberGame(commands.Cog):
@@ -96,7 +97,7 @@ class SeaTurtleGame(commands.Cog):
             try:
                 # 使用 LLMCommands 取得題目與解答
                 result = self.llm.get_seaturtle_question(direction_str)
-                logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{result}")
+                logger.info(f"[海龜湯] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{result}")
 
                 if "題目:" in result and "解答:" in result:
                     parts = result.split("解答:")
@@ -113,7 +114,7 @@ class SeaTurtleGame(commands.Cog):
                     await ctx.send("生成題目時發生錯誤，請稍後再試。")
 
             except Exception as e:
-                logger.error(f"發生錯誤：{e}")
+                logger.error(f"[海龜湯] 發生錯誤：{e}")
                 await ctx.send(f"發生錯誤")
 
 async def setup(bot):
