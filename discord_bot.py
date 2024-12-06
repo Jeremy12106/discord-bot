@@ -47,8 +47,7 @@ async def help(ctx):
         提供可用指令的清單和簡要說明。
         """
         help_message = """\
-🌟 **豆白指令清單**
-**前綴**: 豆白
+🌟 **前綴**: 豆白
 
 🚇 **捷運 [線名]**
 🔸 隨機一站帶你去
@@ -74,7 +73,8 @@ async def help(ctx):
 🐧 **mygo [台詞]**
 🔸 畢竟是一輩子的事
         """
-        await ctx.send(help_message)
+        embed = discord.Embed(title="豆白指令清單", description=help_message, color=discord.Color.blue())
+        await ctx.send(embed=embed)
 
 @bot.command(name = "燒魚")
 async def sauyu(ctx):
