@@ -120,7 +120,6 @@ class YTMusic(commands.Cog):
                 guild_queues[guild_id] = asyncio.Queue()
 
 
-# 加入 cog 到機器人中
 async def setup(bot):
     await bot.add_cog(YTMusic(bot))
     logger.info("YTMusic 功能載入成功！")
