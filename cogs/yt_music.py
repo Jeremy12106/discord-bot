@@ -119,38 +119,6 @@ class YTMusic(commands.Cog):
             if guild_id in guild_queues:
                 guild_queues[guild_id] = asyncio.Queue()
 
-    
-    # @commands.command()
-    # async def next(self, ctx):
-    #     """播放下一首音樂。"""
-    #     guild_id = ctx.guild.id
-    #     queue, folder = get_guild_queue_and_folder(guild_id)
-
-    #     voice_client = ctx.voice_client
-    #     if voice_client is None:
-    #         await ctx.send("我不在任何語音頻道中！")
-    #         return
-
-    #     if not voice_client.is_playing():
-    #         await ctx.send("目前沒有正在播放的音樂！")
-    #         return
-
-    #     # 停止當前播放音樂
-    #     voice_client.stop()
-
-    #     # 取得當前播放音樂的檔案路徑
-    #     current_source = voice_client.source
-    #     if isinstance(current_source, FFmpegPCMAudio):
-    #         current_file_path = current_source.filename  # 獲取當前檔案的路徑
-    #         try:
-    #             if os.path.exists(current_file_path):
-    #                 os.remove(current_file_path)
-    #         except Exception as e:
-    #             print(f"刪除檔案失敗: {current_file_path} - {e}")
-
-    #     # 播放下一首音樂
-    #     await self.play_next(ctx)
-
 
 # 加入 cog 到機器人中
 async def setup(bot):
