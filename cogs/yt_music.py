@@ -63,7 +63,7 @@ class YTMusic(commands.Cog):
             # 將檔案路徑與標題作為字典加入佇列
             await queue.put({"file_path": file_path, "title": yt.title})
             logger.debug(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
-            await ctx.send(f"✔️ 已添加到播放清單: {yt.title}")
+            await ctx.send(f"✅ 已添加到播放清單: {yt.title}")
         except Exception as e:
             logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 下載失敗: {e}")
             await ctx.send(f"❌ 下載失敗")
