@@ -1,10 +1,11 @@
 import os
 import asyncio
 import discord
+from discord import FFmpegPCMAudio
+from discord.ui import Button, View
+from discord.ext import commands
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
-from discord.ext import commands
-from discord import FFmpegPCMAudio
 from loguru import logger
 
 # 定義每個伺服器的播放清單
@@ -20,6 +21,39 @@ def get_guild_queue_and_folder(guild_id):
     if not os.path.exists(guild_folder):
         os.makedirs(guild_folder)
     return guild_queues[guild_id], guild_folder
+
+class MusicControlView(View):
+    def __init__(self, ctx, cog):
+        super().__init__(timeout=None)
+        self.ctx = ctx
+        self.cog = cog
+
+    @discord.ui.button(label="暫停", style=discord.ButtonStyle.danger)
+    async def pause(self, interaction: discord.Interaction, button: Button):
+        voice_client = self.ctx.voice_client
+        if voice_client and voice_client.is_playing():
+            voice_client.pause()
+            await interaction.response.send_message("⏸️ 已暫停播放！", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
+
+    @discord.ui.button(label="繼續播放", style=discord.ButtonStyle.success)
+    async def resume(self, interaction: discord.Interaction, button: Button):
+        voice_client = self.ctx.voice_client
+        if voice_client and voice_client.is_paused():
+            voice_client.resume()
+            await interaction.response.send_message("▶️ 繼續播放音樂！", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ 沒有音樂可以繼續播放！", ephemeral=True)
+
+    @discord.ui.button(label="下一首歌", style=discord.ButtonStyle.primary)
+    async def skip(self, interaction: discord.Interaction, button: Button):
+        voice_client = self.ctx.voice_client
+        if voice_client and voice_client.is_playing():
+            voice_client.stop()
+            await interaction.response.send_message("⏭️ 已跳到下一首！", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ 沒有音樂正在播放！", ephemeral=True)
 
 class YTMusic(commands.Cog):
     def __init__(self, bot):
@@ -84,7 +118,8 @@ class YTMusic(commands.Cog):
                     discord.FFmpegPCMAudio(file_path),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(ctx, file_path))
                 )
-                await ctx.send(f"▶️ 正在播放音樂: {title}")
+                view = MusicControlView(ctx, self)
+                await ctx.send(f"▶️ 正在播放音樂: {title}", view=view)
             except Exception as e:
                 logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 播放音樂時出錯: {e}")
                 await ctx.send(f"❌ 播放音樂時出錯")
