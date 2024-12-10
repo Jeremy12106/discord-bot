@@ -77,7 +77,7 @@ class YTMusic(commands.Cog):
 
         # 如果有提供 URL，將音樂加入播放清單
         if url:
-            logger.info(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {url}")
+            logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 使用者輸入： {url}")
             await self.add_to_queue(ctx, url)
         
         # 播放音樂
@@ -102,11 +102,11 @@ class YTMusic(commands.Cog):
             await queue.put({"file_path": file_path, "title": yt.title, "url": url, "duration": yt.length, "video_id": yt.video_id,
                              "author": yt.author, "views": yt.views, "requester": ctx.author, "user_avatar": ctx.author.avatar.url})
 
-            logger.debug(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
-            embed = discord.Embed(title=f"✅ | 已添加到播放清單: {yt.title}", color=discord.Color.blue())
+            logger.debug(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
+            embed = discord.Embed(title=f"✅ | 已添加到播放清單： {yt.title}", color=discord.Color.blue())
             await ctx.send(embed=embed)
         except Exception as e:
-            logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 下載失敗: {e}")
+            logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 下載失敗： {e}")
             embed = discord.Embed(title="❌ | 下載失敗", color=discord.Color.red())
             await ctx.send(embed=embed)
 
@@ -146,7 +146,7 @@ class YTMusic(commands.Cog):
                 view = MusicControlView(ctx, self)
                 await ctx.send(embed=embed, view=view)
             except Exception as e:
-                logger.error(f"[音樂] 伺服器 ID: {ctx.guild.id}, 播放音樂時出錯: {e}")
+                logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 播放音樂時出錯： {e}")
                 embed = discord.Embed(title=f"❌ | 播放音樂時出錯", color=discord.Color.red())
                 await ctx.send(embed=embed)
                 await self.play_next(ctx)  # 嘗試播放下一首
@@ -159,9 +159,9 @@ class YTMusic(commands.Cog):
             if os.path.exists(file_path):
                 await asyncio.sleep(1)
                 os.remove(file_path)
-                logger.debug(f"[音樂] 伺服器 ID: {ctx.guild.id}, 刪除檔案成功！")
+                logger.debug(f"[音樂] 伺服器 ID： {ctx.guild.id}, 刪除檔案成功！")
         except Exception as e:
-            logger.warning(f"[音樂] 伺服器 ID: {ctx.guild.id}, 刪除檔案失敗: {e}")
+            logger.warning(f"[音樂] 伺服器 ID： {ctx.guild.id}, 刪除檔案失敗： {e}")
         await self.play_next(ctx)
 
     @commands.Cog.listener()
@@ -170,16 +170,16 @@ class YTMusic(commands.Cog):
         if member.bot and before.channel is not None and after.channel is None:
             guild_id = member.guild.id
             _, folder = get_guild_queue_and_folder(guild_id)
-            logger.info(f"[音樂] 伺服器 ID: {member.guild.id}, 離開語音頻道")
+            logger.info(f"[音樂] 伺服器 ID： {member.guild.id}, 離開語音頻道")
             await asyncio.sleep(2)
             # 刪除所有音檔
             for file in os.listdir(folder):
                 file_path = os.path.join(folder, file)
                 try:
                     os.remove(file_path)
-                    logger.debug(f"[音樂] 伺服器 ID: {member.guild.id}, 刪除檔案成功！")
+                    logger.debug(f"[音樂] 伺服器 ID： {member.guild.id}, 刪除檔案成功！")
                 except Exception as e:
-                    logger.warning(f"[音樂] 伺服器 ID: {member.guild.id}, 刪除檔案失敗: {e}")
+                    logger.warning(f"[音樂] 伺服器 ID： {member.guild.id}, 刪除檔案失敗： {e}")
             
             # 清空播放隊列
             if guild_id in guild_queues:

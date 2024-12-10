@@ -56,12 +56,12 @@ class Weather(commands.Cog):
 
                     # 回傳天氣資訊給使用者
                     weather_message = (
-                        f"🌍 **地點**：{location}\n"
-                        f"⏰ **時間**：{start_time} ~ {end_time}\n"
-                        f"🌤 **天氣狀態**：{weather_state}\n"
-                        f"🌧 **降雨機率**：{rain_prob}%\n"
-                        f"🌡 **氣溫**：{min_tem}°C ~ {max_tem}°C\n"
-                        f"😌 **舒適度**：{comfort}\n"
+                        f"🌍 | **地點**：{location}\n"
+                        f"⏰ | **時間**：{start_time} ~ {end_time}\n"
+                        f"🌤 | **天氣狀態**：{weather_state}\n"
+                        f"🌧 | **降雨機率**：{rain_prob}%\n"
+                        f"🌡 | **氣溫**：{min_tem}°C ~ {max_tem}°C\n"
+                        f"😌 | **舒適度**：{comfort}\n"
                     )
                     recommend = self.llm.get_weather_recommendation(weather_message)
                     weather_message += f"💡 **出門建議**：{recommend}"

@@ -42,7 +42,7 @@ class UltimateNumberGame(commands.Cog):
             self.lower_bound = 1
             self.upper_bound = 100
             self.game_active = True
-            await ctx.send("🎲 終極密碼遊戲開始！\n範圍：1 ~ 100\n請輸入 `豆白 guess <數字>` 來猜數字")
+            await ctx.send("🎲 | 終極密碼遊戲開始！\n範圍：1 ~ 100\n請輸入 `豆白 guess <數字>` 來猜數字")
 
     @commands.command(name="guess")
     async def guess(self, ctx, number: int):
@@ -52,18 +52,18 @@ class UltimateNumberGame(commands.Cog):
                 return
             
             if number < self.lower_bound or number > self.upper_bound:
-                await ctx.send(f"⚠️ 無效的猜測！請輸入 {self.lower_bound} ~ {self.upper_bound} 之間的數字。")
+                await ctx.send(f"⚠️ | 無效的猜測！請輸入 {self.lower_bound} ~ {self.upper_bound} 之間的數字。")
                 return
 
             if number == self.target:
-                await ctx.send(f"🎉 恭喜 {ctx.author.mention} 猜中了！答案是 {self.target}！\n遊戲結束！")
+                await ctx.send(f"🎉 | 恭喜 {ctx.author.mention} 猜中了！答案是 {self.target}！\n遊戲結束！")
                 self.game_active = False
             elif number < self.target:
                 self.lower_bound = number + 1
-                await ctx.send(f"🔽 太小了！新的範圍是 {self.lower_bound} ~ {self.upper_bound}。")
+                await ctx.send(f"🔽 | 太小了！新的範圍是 {self.lower_bound} ~ {self.upper_bound}。")
             else:
                 self.upper_bound = number - 1
-                await ctx.send(f"🔼 太大了！新的範圍是 {self.lower_bound} ~ {self.upper_bound}。")
+                await ctx.send(f"🔼 | 太大了！新的範圍是 {self.lower_bound} ~ {self.upper_bound}。")
 
     @commands.command(name="endgame")
     async def end_game(self, ctx):
@@ -72,7 +72,7 @@ class UltimateNumberGame(commands.Cog):
                 await ctx.send("目前沒有進行中的遊戲！")
                 return
             
-            await ctx.send(f"⚠️ 遊戲已結束！正確答案是 {self.target}。\n下次再來玩吧！")
+            await ctx.send(f"⚠️ | 遊戲已結束！正確答案是 {self.target}。\n下次再來玩吧！")
             self.game_active = False
 
 class SeaTurtleGame(commands.Cog):
