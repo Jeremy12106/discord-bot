@@ -33,7 +33,7 @@ class MusicControlView(View):
         voice_client = self.ctx.voice_client
         if voice_client and voice_client.is_paused():
             voice_client.resume()
-            await interaction.response.send_message(f"▶️ | {self.ctx.author} 繼續了音樂！")
+            await interaction.response.send_message(f"▶️ | {interaction.user} 繼續了音樂！")
         else:
             embed = discord.Embed(title="❌ | 沒有正在播放的音樂！", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -43,7 +43,7 @@ class MusicControlView(View):
         voice_client = self.ctx.voice_client
         if voice_client and voice_client.is_playing():
             voice_client.pause()
-            await interaction.response.send_message(f"⏸️ | {self.ctx.author} 暫停了音樂！")
+            await interaction.response.send_message(f"⏸️ | {interaction.user} 暫停了音樂！")
         else:
             embed = discord.Embed(title="❌ | 沒有正在播放的音樂！", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -53,7 +53,7 @@ class MusicControlView(View):
         voice_client = self.ctx.voice_client
         if voice_client:
             voice_client.stop()
-            await interaction.response.send_message(f"⏸️ | {self.ctx.author} 跳過了音樂！")
+            await interaction.response.send_message(f"⏸️ | {interaction.user} 跳過了音樂！")
         else:
             embed = discord.Embed(title="❌ | 沒有正在播放的音樂！", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -113,6 +113,7 @@ class YTMusic(commands.Cog):
     async def play_next(self, ctx):
         guild_id = ctx.guild.id
         queue, _ = get_guild_queue_and_folder(guild_id)
+        view = MusicControlView(ctx, self)
 
         voice_client = ctx.voice_client
         if not voice_client or not voice_client.is_connected():
@@ -136,14 +137,12 @@ class YTMusic(commands.Cog):
                 minutes, seconds = divmod(duration, 60)
                 requester = item["requester"]
                 user_avatar = item["user_avatar"]
-                embed = discord.Embed(title=f"📀 | 正在播放音樂：", description=f"**[{title}]({url})**", color=discord.Color.blue())
+                embed = discord.Embed(title=f"📀 | 正在播放音樂", description=f"**[{title}]({url})**", color=discord.Color.blue())
                 embed.add_field(name="上傳頻道：", value=f"> {author}", inline=True)
                 embed.add_field(name="播放時長：", value=f"> {minutes:02}:{seconds:02}", inline=True)
                 embed.add_field(name="觀看次數：", value=f"> {int(views):,}", inline=False)
                 embed.set_thumbnail(url=thumbnail)
                 embed.set_footer(text=requester, icon_url=user_avatar)  
-                # 功能按鈕
-                view = MusicControlView(ctx, self)
                 await ctx.send(embed=embed, view=view)
             except Exception as e:
                 logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 播放音樂時出錯： {e}")
