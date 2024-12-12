@@ -95,6 +95,14 @@ class YTMusic(commands.Cog):
             audio_stream = yt.streams.get_audio_only()
             file_path = os.path.join(folder, f"{yt.video_id}.mp3")
 
+            # 控制時長 <= 30分鐘
+            limit = 1800
+            if yt.length > limit:
+                logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 影片時間過長！")
+                embed = discord.Embed(title=f"❌ | 影片時間過長！超過 {limit/60} 分鐘", color=discord.Color.red())
+                await ctx.send(embed=embed)
+                return
+
             if not os.path.exists(file_path):  # 避免重複下載
                 audio_stream.download(output_path=folder, filename=f"{yt.video_id}.mp3")
             
