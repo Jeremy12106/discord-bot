@@ -61,6 +61,7 @@ class MusicControlView(View):
 class YTMusic(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.limit = 1800 # 時長<30min
 
     @commands.command()
     async def play(self, ctx, url: str = ""):
@@ -78,7 +79,9 @@ class YTMusic(commands.Cog):
         # 如果有提供 URL，將音樂加入播放清單
         if url:
             logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 使用者輸入： {url}")
-            await self.add_to_queue(ctx, url)
+            is_valid = await self.add_to_queue(ctx, url)
+            if is_valid == False:
+                return
         
         # 播放音樂
         voice_client = ctx.voice_client
@@ -95,14 +98,14 @@ class YTMusic(commands.Cog):
             audio_stream = yt.streams.get_audio_only()
             file_path = os.path.join(folder, f"{yt.video_id}.mp3")
 
-            # 控制時長 <= 30分鐘
-            limit = 1800
-            if yt.length > limit:
+            # 控制時長
+            if yt.length > self.limit:
                 logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 影片時間過長！")
-                embed = discord.Embed(title=f"❌ | 影片時間過長！超過 {limit/60} 分鐘", color=discord.Color.red())
+                embed = discord.Embed(title=f"❌ | 影片時間過長！超過 {self.limit/60} 分鐘", color=discord.Color.red())
                 await ctx.send(embed=embed)
-                return
+                return False
 
+            # 下載 mp3
             if not os.path.exists(file_path):  # 避免重複下載
                 audio_stream.download(output_path=folder, filename=f"{yt.video_id}.mp3")
             
@@ -113,6 +116,7 @@ class YTMusic(commands.Cog):
             logger.debug(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
             embed = discord.Embed(title=f"✅ | 已添加到播放清單： {yt.title}", color=discord.Color.blue())
             await ctx.send(embed=embed)
+            return True
         except Exception as e:
             logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 下載失敗： {e}")
             embed = discord.Embed(title="❌ | 下載失敗", color=discord.Color.red())
