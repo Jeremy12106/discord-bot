@@ -69,8 +69,8 @@
 
 ### 音樂播放
 
-- 使用 `豆白 play` 指令開始播放音樂！  
-![yt__music](assets\pic\readme\yt_music.jpg)
+- 使用 `豆白 play` 來播放音樂！  
+![yt_music](assets/pic/readme/yt_music.jpg)
 
 
 ## 🤝 貢獻
