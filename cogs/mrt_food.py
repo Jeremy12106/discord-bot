@@ -8,7 +8,7 @@ from discord.ext import commands
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class MRT:
-    def __init__(self, data_path=f'{PROJECT_ROOT}/assets/data'):
+    def __init__(self, data_path=f'{PROJECT_ROOT}/assets/data/mrt_food'):
         self.data_path = data_path
         self.stations = self.load_stations()
         self.ramen_shops = self.load_ramen_shops()
