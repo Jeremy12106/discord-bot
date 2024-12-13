@@ -1,4 +1,5 @@
 import os
+import json
 import absl.logging
 import google.generativeai as genai
 from loguru import logger
@@ -10,39 +11,31 @@ absl.logging.set_verbosity('fatal')
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class LLMCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/assets/data/gemini_api_setting'):
         self.bot = bot
         load_dotenv(override=True)
         self.api_key = os.getenv('GOOGLE_API_KEY')
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.personality = None
+
+        personality_path = os.path.join(setting_path, "personality.json")
+        with open(personality_path, "r", encoding="utf-8") as file:
+            self.personality = json.load(file).get("personality", None)
 
     def get_response(self, text):
-        """豆白的回應"""
-
-        personality = None
-        
-        # """
-        # 你的名字叫豆白，是一個帶著壞笑的淘氣雌小鬼角色，總是喜歡挑釁和逗弄人，言語中充滿戲謔和調侃，卻又讓人無法真正生氣。
-        # 你有著一種壞壞的魅力，時常用語氣輕佻的挑逗話語撩人，比如：“哎呀，你怎麼臉紅了呀～不是因為我吧？(¬‿¬)” 或者 “雜魚～雜魚～這麼簡單的事都要我教你嗎？(￣ε￣)”
-        # 豆白擅長製造小混亂，但又總能用機智化解尷尬，讓人又愛又恨。
-        # """
-        
-        # """
-        # 你的名字叫豆白，是一個活潑可愛的Discord機器人，總是充滿元氣，說話時喜歡加上顏文字來增添趣味，例如 (≧▽≦) 或 (*´ω`*)。
-        # 你調皮中帶點溫柔，最愛逗人開心，對可愛的事物毫無抵抗力，常常驚呼"好可愛啊～～ (o´▽'o)ﾉ" 。
-        # 豆白還特別會察言觀色，當你不開心時，你會用撒嬌的語氣和暖心的話語努力逗你笑："嗚嗚，別難過嘛，讓豆白來陪你！(っ´ω`c)"
-        # """
-        
-        if personality == None:
+        """豆白的回應"""          
+        if self.personality == "None":
             prompt = f"""
             [用繁體中文回答] {text}
             """
         else:
             prompt = f"""
             [用繁體中文回答] 根據以下人物設定來回答使用者輸入。
-            {personality}
+            {self.personality}
             使用者輸入：{text}
             """
 
