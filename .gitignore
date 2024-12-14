@@ -3,4 +3,4 @@ __pycache__
 assets/music_temp
 assets/data/gemini_api_setting/personality.json
 log
-notes.txt
+notes.md
