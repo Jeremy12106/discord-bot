@@ -22,6 +22,16 @@ class Feature(commands.Cog):
             chosen = random.choice(choices)
             logger.info(f"[choose] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {choices}, bot 輸出: {chosen}")
             await ctx.send(f"{chosen}")
+    
+    @commands.command(name="骰子")
+    async def dice(self, ctx):
+        """
+        擲一顆骰子，出現 1 到 6 的整數。
+        """
+        async with ctx.typing():
+            result = random.randint(1, 6)
+            logger.info(f"[dice] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, bot 輸出: {result}")
+            await ctx.send(f"🎲 | 你擲出了 {result}")
 
 class UltimateNumberGame(commands.Cog):
     def __init__(self, bot):
