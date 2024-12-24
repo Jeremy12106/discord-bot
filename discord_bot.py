@@ -24,8 +24,8 @@ bot = commands.Bot(command_prefix="豆白 ", help_command=None, intents=intents)
 @bot.event
 async def on_ready():
     logger.info(f"已成功登入為 {bot.user}！")
-
     game = discord.Game('沙威玛传奇')
+    await bot.tree.sync()
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 @bot.command()
@@ -40,7 +40,7 @@ async def ping(ctx):
         logger.info(f"[Ping] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response}")
         await ctx.send(response)
 
-@bot.command()
+@bot.command(name = "help", description = "查看功能指令")
 async def help(ctx):
     async with ctx.typing():
         """
