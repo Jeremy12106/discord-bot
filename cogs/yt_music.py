@@ -2,11 +2,11 @@ import os
 import asyncio
 import discord
 from discord import FFmpegPCMAudio
-from discord.ui import Button, View
+from discord.ui import Button, View, Select
 from discord.ext import commands
 from pytubefix import YouTube
-from pytubefix.cli import on_progress
 from loguru import logger
+from youtube_search import YoutubeSearch
 
 # 定義每個伺服器的播放清單
 guild_queues = {}
@@ -53,18 +53,18 @@ class MusicControlView(View):
         voice_client = self.ctx.voice_client
         if voice_client:
             voice_client.stop()
-            await interaction.response.send_message(f"⏸️ | {interaction.user} 跳過了音樂！")
+            await interaction.response.send_message(f"⏭️ | {interaction.user} 跳過了音樂！")
         else:
             embed = discord.Embed(title="❌ | 沒有正在播放的音樂！", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
-
+    
 class YTMusic(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.limit = 1800 # 時長<30min
 
     @commands.command()
-    async def play(self, ctx, url: str = ""):
+    async def play(self, ctx, query: str = ""):
         
         # 檢查使用者是否已在語音頻道
         if ctx.author.voice:
@@ -76,13 +76,48 @@ class YTMusic(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        # 如果有提供 URL，將音樂加入播放清單
-        if url:
-            logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 使用者輸入： {url}")
-            is_valid = await self.add_to_queue(ctx, url)
-            if is_valid == False:
-                return
-        
+        if query:
+            logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 使用者輸入： {query}")
+            
+            # 檢查是否為URL
+            if "youtube.com" in query or "youtu.be" in query:
+                is_valid = await self.add_to_queue(ctx, query)
+                if is_valid == False:
+                    return
+            # 使用關鍵字搜尋
+            else:  
+                try:
+                    results = YoutubeSearch(query, max_results=10).to_dict()
+                    if not results:
+                        embed = discord.Embed(title="❌ | 未找到相關影片", color=discord.Color.red())
+                        await ctx.send(embed=embed)
+                        return
+                    
+                    # 創建選擇菜單
+                    view = SongSelectView(self, results, ctx)
+                    
+                    # 創建包含搜尋結果的embed
+                    embed = discord.Embed(title="🔍 | YouTube搜尋結果", description="請選擇要播放的歌曲：", color=discord.Color.blue())
+                    for i, result in enumerate(results, 1):
+                        duration = result.get('duration', 'N/A')
+                        embed.add_field(
+                            name=f"{i}. {result['title']}", 
+                            value=f"頻道: {result['channel']}\n時長: {duration}", 
+                            inline=False
+                        )
+                    
+                    await ctx.send(embed=embed, view=view)
+                    return
+                    
+                except Exception as e:
+                    logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 搜尋失敗： {e}")
+                    embed = discord.Embed(title="❌ | 搜尋失敗", color=discord.Color.red())
+                    await ctx.send(embed=embed)
+                    return
+        else:
+            embed = discord.Embed(title="❌ | 請提供URL或歌曲查詢", color=discord.Color.red())
+            await ctx.send(embed=embed)
+
         # 播放音樂
         voice_client = ctx.voice_client
         if not voice_client.is_playing():
@@ -113,16 +148,17 @@ class YTMusic(commands.Cog):
             await queue.put({"file_path": file_path, "title": yt.title, "url": url, "duration": yt.length, "video_id": yt.video_id,
                              "author": yt.author, "views": yt.views, "requester": ctx.author, "user_avatar": ctx.author.avatar.url})
 
-            logger.debug(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
+            logger.info(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 成功將 {yt.title} 添加到播放清單")
             embed = discord.Embed(title=f"✅ | 已添加到播放清單： {yt.title}", color=discord.Color.blue())
             await ctx.send(embed=embed)
             return True
+        
         except Exception as e:
             logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 使用者名稱： {ctx.author.name}, 下載失敗： {e}")
             embed = discord.Embed(title="❌ | 下載失敗", color=discord.Color.red())
             await ctx.send(embed=embed)
 
-    async def play_next(self, ctx):
+    async def play_next(self, ctx, interaction=None):
         guild_id = ctx.guild.id
         queue, _ = get_guild_queue_and_folder(guild_id)
         view = MusicControlView(ctx, self)
@@ -155,15 +191,24 @@ class YTMusic(commands.Cog):
                 embed.add_field(name="觀看次數：", value=f"> {int(views):,}", inline=False)
                 embed.set_thumbnail(url=thumbnail)
                 embed.set_footer(text=requester, icon_url=user_avatar)  
-                await ctx.send(embed=embed, view=view)
+                if interaction:
+                    await interaction.response.send_message(embed=embed, view=view)
+                else:
+                    await ctx.send(embed=embed, view=view)
             except Exception as e:
                 logger.error(f"[音樂] 伺服器 ID： {ctx.guild.id}, 播放音樂時出錯： {e}")
                 embed = discord.Embed(title=f"❌ | 播放音樂時出錯", color=discord.Color.red())
-                await ctx.send(embed=embed)
+                if interaction:
+                    await interaction.response.send_message(embed=embed)
+                else:
+                    await ctx.send(embed=embed)
                 await self.play_next(ctx)  # 嘗試播放下一首
         else:
             embed = discord.Embed(title="🌟 | 播放清單已播放完畢！", color=discord.Color.blue())
-            await ctx.send(embed=embed)
+            if interaction:
+                    await interaction.response.send_message(embed=embed)
+            else:
+                await ctx.send(embed=embed)
 
     async def handle_after_play(self, ctx, file_path):
         try:
@@ -196,6 +241,54 @@ class YTMusic(commands.Cog):
             if guild_id in guild_queues:
                 guild_queues[guild_id] = asyncio.Queue()
 
+class SongSelectView(View):
+    def __init__(self, cog, results, ctx):
+        super().__init__(timeout=60)
+        self.cog = cog
+        self.results = results
+        self.ctx = ctx
+        
+        # 創建選擇菜單
+        options = []
+        for i, result in enumerate(results, 1):
+            options.append(discord.SelectOption(
+                label=f"{i}. {result['title'][:80]}", # Discord限制選項標籤最多100字符
+                description=f"{result['channel']} | {result.get('duration', 'N/A')}",
+                value=str(i-1)
+            ))
+            
+        select = Select(
+            placeholder="選擇要播放的歌曲...",
+            options=options,
+            min_values=1,
+            max_values=1
+        )
+        select.callback = self.select_callback
+        self.add_item(select)
+    
+    async def select_callback(self, interaction: discord.Interaction):
+        try:
+            # 獲取選擇的歌曲
+            selected_index = int(interaction.data['values'][0])
+            selected_result = self.results[selected_index]
+            video_url = f"https://www.youtube.com{selected_result['url_suffix']}"
+
+            # 添加到播放清單
+            is_valid = await self.cog.add_to_queue(self.ctx, video_url)
+            if is_valid:
+                # 如果清單是空的且沒有正在播放，開始播放
+                voice_client = self.ctx.guild.voice_client
+                if voice_client and not voice_client.is_playing():
+                    await self.cog.play_next(self.ctx, interaction)
+            else:
+                return
+            # 禁用選擇菜單
+            for child in self.children:
+                child.disabled = True
+            await interaction.response.edit_message(view=None)
+        except Exception as e:
+            embed = discord.Embed(title=f"❌ | 發生錯誤：{str(e)}", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(YTMusic(bot))
