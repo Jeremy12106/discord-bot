@@ -64,7 +64,7 @@ class YTMusic(commands.Cog):
         self.limit = 1800 # 時長<30min
 
     @commands.command()
-    async def play(self, ctx, query: str = ""):
+    async def play(self, ctx, *, query: str = ""):
         
         # 檢查使用者是否已在語音頻道
         if ctx.author.voice:
@@ -185,7 +185,7 @@ class YTMusic(commands.Cog):
                 minutes, seconds = divmod(duration, 60)
                 requester = item["requester"]
                 user_avatar = item["user_avatar"]
-                embed = discord.Embed(title=f"📀 | 正在播放音樂", description=f"**[{title}]({url})**", color=discord.Color.blue())
+                embed = discord.Embed(title=f"🎵 | 正在播放音樂", description=f"**[{title}]({url})**", color=discord.Color.blue())
                 embed.add_field(name="上傳頻道：", value=f"> {author}", inline=True)
                 embed.add_field(name="播放時長：", value=f"> {minutes:02}:{seconds:02}", inline=True)
                 embed.add_field(name="觀看次數：", value=f"> {int(views):,}", inline=False)
@@ -275,21 +275,24 @@ class SongSelectView(View):
 
             # 添加到播放清單
             is_valid = await self.cog.add_to_queue(self.ctx, video_url)
-            if is_valid:
-                # 如果清單是空的且沒有正在播放，開始播放
-                voice_client = self.ctx.guild.voice_client
-                if voice_client and not voice_client.is_playing():
-                    await self.cog.play_next(self.ctx, interaction)
-            else:
+            if is_valid == False:
                 return
-            # 禁用選擇菜單
-            for child in self.children:
-                child.disabled = True
-            await interaction.response.edit_message(view=None)
+            
+            # 撥放音樂
+            voice_client = self.ctx.voice_client
+            if not voice_client.is_playing():
+                await self.cog.play_next(self.ctx, interaction)
+            
+            # 關閉選單
+            for item in self.children:
+                item.disabled = True
+            await interaction.response.edit_message(view=self)
+
         except Exception as e:
             embed = discord.Embed(title=f"❌ | 發生錯誤：{str(e)}", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):
+    pass
     await bot.add_cog(YTMusic(bot))
     logger.info("YTMusic 功能載入成功！")
