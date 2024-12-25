@@ -1,5 +1,5 @@
 import discord
-import logging as logger
+from loguru import logger
 
 class SongSelectView(discord.ui.View):
     def __init__(self, cog, results, original_interaction):

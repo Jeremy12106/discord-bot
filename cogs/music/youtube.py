@@ -1,5 +1,5 @@
 import os
-import logging as logger
+from loguru import logger
 from pytubefix import YouTube
 from youtube_search import YoutubeSearch
 

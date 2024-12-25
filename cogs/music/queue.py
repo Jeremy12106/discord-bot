@@ -1,6 +1,6 @@
 import os
 import asyncio
-import logging as logger
+from loguru import logger
 
 # 定義每個伺服器的播放清單
 guild_queues = {}

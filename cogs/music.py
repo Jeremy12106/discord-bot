@@ -1,4 +1,4 @@
-import logging as logger
+from loguru import logger
 from .music.player import YTMusic
 
 async def setup(bot):

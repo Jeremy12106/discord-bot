@@ -1,6 +1,6 @@
 import discord
 import asyncio
-import logging as logger
+from loguru import logger
 from .progress import ProgressSelect
 from ..queue import guild_queues
 

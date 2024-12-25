@@ -4,7 +4,7 @@ import discord
 from discord import FFmpegPCMAudio
 from discord.ext import commands
 from discord import app_commands
-import logging as logger
+from loguru import logger
 
 from .queue import get_guild_queue_and_folder, guild_queues
 from .youtube import YouTubeManager
@@ -47,7 +47,7 @@ class YTMusic(commands.Cog):
         except Exception as e:
             logger.error(f"更新進度條位置失敗: {e}")
 
-    @app_commands.command(name="play", description="播放影片(網址或關鍵字)")
+    @app_commands.command(name="play", description="播放影片 (網址或關鍵字)")
     async def play(self, interaction: discord.Interaction, query: str = ""):
         # 檢查使用者是否已在語音頻道
         if interaction.user.voice:
@@ -149,7 +149,7 @@ class YTMusic(commands.Cog):
                 
                 # 創建或更新 embed
                 embed = discord.Embed(
-                    title="🎵 | 正在播放",
+                    title="🎵 | 正在播放音樂",
                     description=f"**[{item['title']}]({item['url']})**",
                     color=discord.Color.blue()
                 )
