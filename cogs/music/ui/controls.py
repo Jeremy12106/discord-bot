@@ -33,7 +33,7 @@ class MusicControlView(discord.ui.View):
                     
                 if self.current_embed and self.message:
                     progress_bar = self.create_progress_bar(self.current_position, duration)
-                    self.current_embed.set_field_at(3, name="🎵 播放進度", value=progress_bar, inline=False)
+                    self.current_embed.set_field_at(3, name="播放進度", value=progress_bar, inline=False)
                     await self.message.edit(embed=self.current_embed)
                 
                 await asyncio.sleep(1)

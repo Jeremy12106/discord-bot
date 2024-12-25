@@ -169,14 +169,9 @@ class YTMusic(commands.Cog):
                 view = MusicControlView(interaction, self)
                 # view.add_progress_select()
                 
-                # 如果已有播放訊息，則更新它
-                if self.current_message:
-                    await self.current_message.edit(embed=embed, view=view)
-                    message = self.current_message
-                else:
-                    # 否則發送新訊息
-                    message = await interaction.followup.send(embed=embed, view=view)
-                    self.current_message = message
+                # 發送新訊息
+                message = await interaction.followup.send(embed=embed, view=view)
+                self.current_message = message
                 
                 # 設置視圖的訊息和 embed
                 view.message = message
