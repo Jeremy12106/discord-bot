@@ -291,5 +291,6 @@ class SongSelectView(View):
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):
-    await bot.add_cog(YTMusic(bot))
-    logger.info("YTMusic 功能載入成功！")
+    pass
+    # await bot.add_cog(YTMusic(bot))
+    # logger.info("YTMusic 功能載入成功！")
