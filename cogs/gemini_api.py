@@ -1,4 +1,6 @@
 import os
+import re
+import ast
 import json
 import absl.logging
 import google.generativeai as genai
@@ -39,7 +41,8 @@ class LLMCommands(commands.Cog):
             使用者輸入：{text}
             """
 
-        response = self.model.generate_content(prompt)
+        response = self.model.generate_content(prompt, 
+                                               safety_settings = 'BLOCK_NONE')
         return response.text
     
     def get_weather_recommendation(self, weather_info):
@@ -63,6 +66,13 @@ class LLMCommands(commands.Cog):
         response = self.model.generate_content(prompt)
         return response.text
 
+    def get_keyword(self, text):
+        prompt = f"""
+        [以繁體中文提取關鍵字並用List形式輸出] {text}
+        """
+        response = self.model.generate_content(prompt)
+        return response.text
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         """當命令錯誤時，觸發該事件處理"""
@@ -81,3 +91,18 @@ class LLMCommands(commands.Cog):
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
     logger.info("LLM 功能載入成功！")
+
+
+if __name__ == "__main__":
+    
+    prompt = input("輸入：")
+    llm = LLMCommands(None)
+    response = llm.get_keyword(prompt)
+    print("輸出：" + response)
+
+    match = re.search(r"keywords\s*=\s*(\[[^\]]*\])", response, re.DOTALL)
+    if match:
+        list_str = match.group(1)
+        extracted_list = ast.literal_eval(list_str)
+        print(extracted_list)
+
