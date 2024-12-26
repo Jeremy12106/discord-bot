@@ -124,7 +124,7 @@ class YTMusic(commands.Cog):
                 
                 # 開始播放
                 voice_client.play(
-                    FFmpegPCMAudio(file_path),
+                    FFmpegPCMAudio(file_path, pipe=False),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(interaction, file_path))
                 )
                 
