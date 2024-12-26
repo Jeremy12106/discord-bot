@@ -6,24 +6,26 @@ from loguru import logger
 from dotenv import load_dotenv
 from discord.ext import commands
 
+# 載入設定檔
 PROJECT_ROOT = os.getcwd()
 SETTING_PATH=f"{PROJECT_ROOT}/config"
 music_config_path = os.path.join(SETTING_PATH, "bot_config.json")
 with open(music_config_path, "r", encoding="utf-8") as file:
     bot_config = json.load(file)
 
+# 載入環境變數
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
+# 設定系統日誌
 log_path = "./log/discord_bot.log"
 level = os.getenv("LOG_LEVEL")
 logger.add(log_path, level = level, format="{time} | {level} | {message}", rotation="10 MB")
 
+# 機器初始化設定
 intents = discord.Intents.default()
 intents.messages = True
-intents.message_content = True  # 確保機器人能讀取消息內容
-
-# 機器人前綴
+intents.message_content = True
 bot = commands.Bot(command_prefix=bot_config['prefix'], help_command=None, intents=intents)
 
 status_dict = {
@@ -33,7 +35,6 @@ status_dict = {
     'invisible': discord.Status.invisible
 }
 
-# 當機器人啟動時觸發
 @bot.event
 async def on_ready():
     logger.info(f"已成功登入為 {bot.user}！")
@@ -52,11 +53,6 @@ async def ping(ctx):
         response = f"Pong! 延遲為 {round(bot.latency * 1000)}ms"
         logger.info(f"[Ping] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response}")
         await ctx.send(response)
-
-@bot.command(name="燒魚")
-async def sauyu(ctx):
-    async with ctx.typing():
-        await ctx.send("燒魚燒魚燒魚")
 
 # 載入功能
 async def load_extensions():

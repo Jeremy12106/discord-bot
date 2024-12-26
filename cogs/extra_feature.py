@@ -33,6 +33,11 @@ class Feature(commands.Cog):
             logger.info(f"[dice] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, bot 輸出: {result}")
             await ctx.send(f"🎲 | 你擲出了 {result}")
 
+    @commands.command(name="燒魚")
+    async def sauyu(self, ctx):
+        async with ctx.typing():
+            await ctx.send("燒魚燒魚燒魚")
+
 class UltimateNumberGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
