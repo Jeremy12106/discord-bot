@@ -1,6 +1,7 @@
 .env
 __pycache__
 assets/music_temp
-assets/data/gemini_api_setting/personality.json
+config/bot_config.json
+config/music_config.json
 log
 notes.md
