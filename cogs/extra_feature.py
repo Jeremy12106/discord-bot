@@ -131,4 +131,4 @@ async def setup(bot):
     await bot.add_cog(Feature(bot))
     await bot.add_cog(UltimateNumberGame(bot))
     await bot.add_cog(SeaTurtleGame(bot))
-    logger.info("追加功能載入成功！")
+    

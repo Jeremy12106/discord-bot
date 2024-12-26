@@ -85,4 +85,4 @@ class MRTCog(commands.Cog):
 # 註冊並加載 MRTCog
 async def setup(bot):
     await bot.add_cog(MRTCog(bot))
-    logger.info("MRT food 功能載入成功！")
+    

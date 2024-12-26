@@ -13,24 +13,24 @@ absl.logging.set_verbosity('fatal')
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.getcwd()
 
 class LLMCommands(commands.Cog):
-    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/assets/data/gemini_api_setting'):
-        self.bot = bot
+    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/config'):
         load_dotenv(override=True)
+        self.bot = bot
         self.api_key = os.getenv('GOOGLE_API_KEY')
-        genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.personality = None
+        genai.configure(api_key=self.api_key)
 
-        personality_path = os.path.join(setting_path, "personality.json")
-        with open(personality_path, "r", encoding="utf-8") as file:
+        bot_config_path = os.path.join(setting_path, "bot_config.json")
+        with open(bot_config_path, "r", encoding="utf-8") as file:
             self.personality = json.load(file).get("personality", None)
 
     def get_response(self, text):
         """豆白的回應"""          
-        if self.personality == "None":
+        if self.personality == None:
             prompt = f"""
             [用繁體中文回答] {text}
             """
@@ -90,7 +90,7 @@ class LLMCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
-    logger.info("LLM 功能載入成功！")
+
 
 
 if __name__ == "__main__":

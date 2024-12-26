@@ -79,4 +79,4 @@ class Weather(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Weather(bot))
-    logger.info("天氣功能載入成功！")
+    
