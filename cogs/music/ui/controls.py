@@ -27,7 +27,7 @@ class MusicControlView(discord.ui.View):
         bar = "▰" * filled + "▱" * (length - filled)
         minutes_current, seconds_current = divmod(current, 60)
         minutes_total, seconds_total = divmod(total, 60)
-        return f"{minutes_current:02d}:{seconds_current:02d} {bar} {minutes_total:02d}:{seconds_total:02d}"
+        return f"> {minutes_current:02d}:{seconds_current:02d} {bar} {minutes_total:02d}:{seconds_total:02d}"
 
     async def update_progress(self, duration):
         try:
@@ -43,8 +43,8 @@ class MusicControlView(discord.ui.View):
                     progress_bar = self.create_progress_bar(self.current_position, duration)
                     self.current_embed.set_field_at(3, name="播放進度", value=progress_bar, inline=False)
                     await self.message.edit(embed=self.current_embed)
-                
-                await asyncio.sleep(1)
+                # 更新頻率 (加上延遲約1秒)
+                await asyncio.sleep(0.6)
         except Exception as e:
             logger.error(f"Progress update error: {e}")
 
