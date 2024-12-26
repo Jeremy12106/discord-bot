@@ -11,7 +11,7 @@ class MyGo(commands.Cog):
     @commands.command(name = "mygo")
     async def send_image(self, ctx, query: str):
         async with ctx.typing():
-            image_folder = 'assets/pic/mygo'
+            image_folder = 'assets/image/mygo'
 
             # 使用 glob 模組來匹配包含 query 的圖片檔案
             pattern = os.path.join(image_folder, f"*{query}*.jpg")  # 可以匹配包含 query 的圖片名稱

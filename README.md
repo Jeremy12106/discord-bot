@@ -70,32 +70,32 @@
 ### 音樂播放
 
 - 使用 `豆白 play` 來播放音樂  
-![yt_music](assets/pic/readme/yt_music.jpg)  
+![yt_music](assets/image/readme/yt_music.jpg)  
 
 ### 天氣預報
 
 - 使用 `豆白 天氣 [縣市]` 來查看即時天氣  
-![weather](assets/pic/readme/weather.jpg)  
+![weather](assets/image/readme/weather.jpg)  
 
 ### 語言模型
 
 - 使用 `豆白 [任意]` 來和豆白對話  
-![llm](assets/pic/readme/llm.jpg)  
+![llm](assets/image/readme/llm.jpg)  
 
 ### 拉麵推薦
 
 - 使用 `豆白 拉麵 [捷運站]` 來找好吃拉麵  
-![ramen](assets/pic/readme/ramen.jpg)  
+![ramen](assets/image/readme/ramen.jpg)  
 
 ### 圖庫搜尋
 
 - 使用 `豆白 mygo [台詞]` 來發一輩子的圖片  
-![mygo](assets/pic/readme/mygo.jpg)  
+![mygo](assets/image/readme/mygo.jpg)  
 
 ### 特色遊戲
 
 - 使用 `豆白 海龜湯 [出題方向]` 來一場腦力激盪的海龜湯  
-![turtlesoup](assets/pic/readme/turtlesoup.jpg)  
+![turtlesoup](assets/image/readme/turtlesoup.jpg)  
 
 
 ## 🤝 貢獻
