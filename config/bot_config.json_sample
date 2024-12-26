@@ -1,3 +1,6 @@
 {
-    "personality": None
+    "prefix": "!",
+    "status": "online",
+    "activity": null,
+    "personality": null
 }
