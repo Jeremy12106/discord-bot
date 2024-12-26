@@ -31,4 +31,4 @@ class MyGo(commands.Cog):
 # 註冊 cog
 async def setup(bot):
     await bot.add_cog(MyGo(bot))
-    logger.info("MYGO 載入了一輩子！")
+    

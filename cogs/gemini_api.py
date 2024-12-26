@@ -14,7 +14,7 @@ os.environ["GLOG_minloglevel"] = "3"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class LLMCommands(commands.Cog):
-    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/assets/data/gemini_api_setting'):
+    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/config'):
         self.bot = bot
         load_dotenv(override=True)
         self.api_key = os.getenv('GOOGLE_API_KEY')
@@ -80,4 +80,4 @@ class LLMCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
-    logger.info("LLM 功能載入成功！")
+    
