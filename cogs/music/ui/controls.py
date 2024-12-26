@@ -1,8 +1,12 @@
+import os
+import json
 import discord
 import asyncio
 from loguru import logger
-from .progress import ProgressSelect
 from ..queue import guild_queues
+
+PROJECT_ROOT = os.getcwd()
+SETTING_PATH=f"{PROJECT_ROOT}/config"
 
 class MusicControlView(discord.ui.View):
     def __init__(self, interaction: discord.Interaction, cog):
@@ -13,6 +17,10 @@ class MusicControlView(discord.ui.View):
         self.message = None
         self.update_task = None
         self.current_embed = None
+
+        music_config_path = os.path.join(SETTING_PATH, "music_config.json")
+        with open(music_config_path, "r", encoding="utf-8") as file:
+            self.music_setting = json.load(file)
 
     def create_progress_bar(self, current, total, length=20):
         filled = int(length * current / total)
@@ -98,10 +106,11 @@ class MusicControlView(discord.ui.View):
                 voice_client.resume()
                 await self.update_embed(interaction, f"▶️ | {interaction.user.name} 繼續了音樂")
                 # 重新啟動進度更新
-                if hasattr(self.cog, 'current_song'):
-                    self.update_task = self.cog.bot.loop.create_task(
-                        self.update_progress(self.cog.current_song["duration"])
-                    )
+                if self.music_setting['display_progress_bar']:
+                    if hasattr(self.cog, 'current_song'):
+                        self.update_task = self.cog.bot.loop.create_task(
+                            self.update_progress(self.cog.current_song["duration"])
+                        )
             await interaction.response.defer()
         else:
             await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
@@ -156,7 +165,11 @@ class MusicControlView(discord.ui.View):
                 minutes, seconds = divmod(item["duration"], 60)
                 queue_text += f"{i}. {item['title']} | {minutes:02d}:{seconds:02d}\n"
             
-            self.current_embed.set_field_at(4, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
+            if self.music_setting['display_progress_bar']:
+                self.current_embed.set_field_at(4, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
+            else:
+                self.current_embed.set_field_at(3, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
+
             await self.message.edit(embed=self.current_embed)
             await interaction.response.defer()
         else:

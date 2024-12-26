@@ -1,7 +1,7 @@
 .env
 __pycache__
 assets/music_temp
-config/personality.json
+config/bot_config.json
 config/music_config.json
 log
 notes.md
