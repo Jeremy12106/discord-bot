@@ -1,13 +1,19 @@
 import os
+import json
 import discord
 import asyncio
 from loguru import logger
 from dotenv import load_dotenv
 from discord.ext import commands
 
+PROJECT_ROOT = os.getcwd()
+SETTING_PATH=f"{PROJECT_ROOT}/config"
+music_config_path = os.path.join(SETTING_PATH, "bot_config.json")
+with open(music_config_path, "r", encoding="utf-8") as file:
+    bot_config = json.load(file)
+
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-
 
 log_path = "./log/discord_bot.log"
 level = os.getenv("LOG_LEVEL")
@@ -18,15 +24,22 @@ intents.messages = True
 intents.message_content = True  # 確保機器人能讀取消息內容
 
 # 機器人前綴
-bot = commands.Bot(command_prefix="豆白 ", help_command=None, intents=intents)
+bot = commands.Bot(command_prefix=bot_config['prefix'], help_command=None, intents=intents)
+
+status_dict = {
+    'online': discord.Status.online,
+    'idle': discord.Status.idle,
+    'dnd': discord.Status.dnd,
+    'invisible': discord.Status.invisible
+}
 
 # 當機器人啟動時觸發
 @bot.event
 async def on_ready():
     logger.info(f"已成功登入為 {bot.user}！")
-    game = discord.Game('沙威玛传奇')
+    game = discord.Game(bot_config['activity'])
     await bot.tree.sync()
-    await bot.change_presence(status=discord.Status.online, activity=game)
+    await bot.change_presence(status=status_dict[bot_config['status']], activity=game)
 
 @bot.command()
 async def hello(ctx):
@@ -40,46 +53,7 @@ async def ping(ctx):
         logger.info(f"[Ping] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response}")
         await ctx.send(response)
 
-@bot.command(name = "help", description = "查看功能指令")
-async def help(ctx):
-    async with ctx.typing():
-        """
-        提供可用指令的清單和簡要說明。
-        """
-        help_message = """\
-🌟 | **前綴**: 豆白
-
-🚇 | **捷運 [線名]**
-🔸 隨機一站帶你去
-
-🍜 | **拉麵 [捷運站名]**
-🔸 推薦好吃拉麵
-
-☀️ | **天氣 [縣市]**
-🔸 查看指定地點的天氣預報
-
-🎲 | **choose [選項1 選項2 ...]**
-🔸 幫你做選擇
-
-🎲 | **dice**
-🔸 擲一顆六面骰子
-
-🔢 | **終極密碼**
-🔸 開啟一場刺激的終極密碼遊戲
-
-🐢 | **海龜湯 [出題方向1 出題方向2 ...]**
-🔸 來一場好玩的海龜湯吧
-
-🎵 | **play [YouTube-URL]**
-🔸 播放指定的 YouTube 音樂
-
-🐧 | **mygo [台詞]**
-🔸 畢竟是一輩子的事
-        """
-        embed = discord.Embed(title="豆白指令清單", description=help_message, color=discord.Color.blue())
-        await ctx.send(embed=embed)
-
-@bot.command(name = "燒魚")
+@bot.command(name="燒魚")
 async def sauyu(ctx):
     async with ctx.typing():
         await ctx.send("燒魚燒魚燒魚")
