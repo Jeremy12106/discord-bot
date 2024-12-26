@@ -23,7 +23,7 @@ class Feature(commands.Cog):
             logger.info(f"[choose] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {choices}, bot 輸出: {chosen}")
             await ctx.send(f"{chosen}")
     
-    @commands.command(name="骰子")
+    @commands.command()
     async def dice(self, ctx):
         """
         擲一顆骰子，出現 1 到 6 的整數。
