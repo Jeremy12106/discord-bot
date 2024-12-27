@@ -1,10 +1,11 @@
 .env
-**/__pycache__/
+__pycache__
 assets/
 log/
 config/
 README.md
 notes.txt
+LICENSE
 
 # Git
 .git
