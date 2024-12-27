@@ -1,6 +1,7 @@
 import random
 import discord
 from loguru import logger
+from discord import app_commands
 from discord.ext import commands
 from cogs.gemini_api import LLMCommands
 
@@ -8,30 +9,37 @@ class Feature(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def choose(self, ctx, *choices: str):
+    @app_commands.command(name="choose", description="隨機幫你做選擇")
+    @app_commands.describe(choices="提供選擇的選項 (以空格間隔)")
+    async def choose(self, interaction: discord.Interaction, choices: str):
         """
         使用者選擇任意數量的選項，隨機回傳一個選項。
         """
-        async with ctx.typing():
-            if not choices:
-                await ctx.send("你要選什麼?")
-                return
+        # 將用戶輸入的選項字串轉換為列表
+        options = choices.split(" ")
 
-            # 隨機選擇一個選項
-            chosen = random.choice(choices)
-            logger.info(f"[choose] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {choices}, bot 輸出: {chosen}")
-            await ctx.send(f"{chosen}")
+        if not options:
+            await interaction.response.send_message("你要選什麼?")
+            return
+
+        # 隨機選擇一個選項
+        chosen = random.choice(options)
+        logger.info(f"[choose] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {choices}, bot 輸出: {chosen}")
+        embed = discord.Embed(title="🎲 | 選擇器", description=f"> 輸入選項：{choices}", color=discord.Color.blue())
+        embed.add_field(name="選擇結果", value=f"> {chosen}", inline=False)
+        await interaction.response.send_message(embed=embed)
     
-    @commands.command()
-    async def dice(self, ctx):
+    @app_commands.command(name="dice", description="擲一顆多面骰子，預設為6")
+    @app_commands.describe(sides="骰子面數，最少為2，預設為6")
+    async def dice(self, interaction: discord.Interaction, sides: int = 6):
         """
-        擲一顆骰子，出現 1 到 6 的整數。
+        擲一顆多面骰子，預設為6，最少為2。
         """
-        async with ctx.typing():
-            result = random.randint(1, 6)
-            logger.info(f"[dice] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, bot 輸出: {result}")
-            await ctx.send(f"🎲 | 你擲出了 {result}")
+        sides = max(sides, 2)
+        
+        result = random.randint(1, sides)
+        logger.info(f"[dice] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 擲骰子面數: {sides}, bot 輸出: {result}")
+        await interaction.response.send_message(f"🎲 | 你擲出了一顆 {sides} 面骰，結果 {result}。")
 
     @commands.command(name="燒魚")
     async def sauyu(self, ctx):
