@@ -10,10 +10,9 @@ from loguru import logger
 from .queue import get_guild_queue_and_folder, guild_queues
 from .youtube import YouTubeManager
 from .ui.controls import MusicControlView
-from .ui.song_select import SongSelectView
 
 PROJECT_ROOT = os.getcwd()
-SETTING_PATH=f"{PROJECT_ROOT}/config"
+SETTING_PATH = f"{PROJECT_ROOT}/config"
 
 class YTMusic(commands.Cog):
     def __init__(self, bot):
@@ -28,7 +27,7 @@ class YTMusic(commands.Cog):
             self.music_setting = json.load(file)
 
     @app_commands.command(name="play", description="播放音樂")
-    @app_commands.describe(song = "輸入網址或關鍵字")
+    @app_commands.describe(song="輸入網址或關鍵字")
     async def play(self, interaction: discord.Interaction, song: str = ""):
         # 檢查使用者是否已在語音頻道
         if interaction.user.voice:
@@ -40,46 +39,51 @@ class YTMusic(commands.Cog):
             await interaction.response.send_message(embed=embed)
             return
 
-        # 如果有提供查詢，將音樂加入播放清單
-        if song:
-            logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 使用者輸入： {song}")
-            
+        # 檢查是否為 URL 或使用關鍵字播放
+        if "youtube.com" in song or "youtu.be" in song:
             await interaction.response.defer()
-            
-            # 檢查是否為URL
-            if "youtube.com" in song or "youtu.be" in song:
-                is_valid = await self.add_to_queue(interaction, song, is_deferred=True)
-            else:
-                # 使用關鍵字搜尋
-                results = await self.youtube.search_videos(song)
-                if not results:
-                    embed = discord.Embed(title="❌ | 未找到相關影片", color=discord.Color.red())
-                    await interaction.followup.send(embed=embed)
+            is_valid = await self.add_to_queue(interaction, song, is_deferred=True)
+            if not is_valid:
+                return
+        else:
+            # 使用者選擇的關鍵字結果直接播放
+            await interaction.response.defer()
+            song = song.split("⌂", 1)[0]
+            results = await self.youtube.search_videos(song)
+            if results:
+                selected_result = results[0]
+                video_url = f"https://www.youtube.com{selected_result['url_suffix']}"
+                is_valid = await self.add_to_queue(interaction, video_url, is_deferred=True)
+                if not is_valid:
                     return
-                
-                # 創建選擇菜單
-                view = SongSelectView(self, results, interaction)
-                
-                # 創建包含搜尋結果的embed
-                embed = discord.Embed(title="🔍 | YouTube搜尋結果", description="請選擇要播放的歌曲：", color=discord.Color.blue())
-                for i, result in enumerate(results, 1):
-                    duration = result.get('duration', 'N/A')
-                    embed.add_field(
-                        name=f"{i}. {result['title']}", 
-                        value=f"頻道: {result['channel']}\n時長: {duration}", 
-                        inline=False
-                    )
-                
-                await interaction.followup.send(embed=embed, view=view)
+            else:
+                embed = discord.Embed(title="❌ | 未找到相關影片", color=discord.Color.red())
+                await interaction.followup.send(embed=embed)
                 return
-                
-            if is_valid == False:
-                return
-        
+
         # 播放音樂
         voice_client = interaction.guild.voice_client
         if not voice_client.is_playing():
             await self.play_next(interaction)
+
+    @play.autocomplete("song")
+    async def song_autocomplete(self, interaction: discord.Interaction, current: str):
+        # 動態搜索關鍵字
+
+        # 搜尋前十項
+        results = await self.youtube.search_videos(current, max_results=10)
+        if results:
+            try:
+                return [
+                    app_commands.Choice(
+                        name=f"{result['title']} ⌂ {result['channel']} - {result['duration']}",
+                        value=f"{result['title']}"
+                    )
+                    for result in results
+                ]
+            except Exception as e:
+                print(f"Autocomplete 發生錯誤: {e}")
+        return []
 
     async def add_to_queue(self, interaction, url, is_deferred=False):
         guild_id = interaction.guild.id
@@ -99,7 +103,7 @@ class YTMusic(commands.Cog):
         # 將檔案資訊加入佇列
         await queue.put(video_info)
 
-        logger.debug(f"[音樂] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 成功將 {video_info['title']} 添加到播放清單")
+        logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 成功將 {video_info['title']} 添加到播放清單")
         embed = discord.Embed(title=f"✅ | 已添加到播放清單： {video_info['title']}", color=discord.Color.blue())
         if is_deferred:
             await interaction.followup.send(embed=embed)
