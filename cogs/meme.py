@@ -13,20 +13,19 @@ class MyGo(commands.Cog):
     @app_commands.command(name="mygo", description="畢竟是一輩子的事")
     @app_commands.describe(query="輸入關鍵字")
     async def send_image(self, interaction: discord.Interaction, query: str):
-        async with interaction.channel.typing():
-            pattern = os.path.join(self.image_folder, f"*{query}*.jpg")
-            matched_images = glob.glob(pattern)
+        pattern = os.path.join(self.image_folder, f"*{query}*.jpg")
+        matched_images = glob.glob(pattern)
 
-            if matched_images:
-                logger.info(f"[MyGo] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {query}, bot 輸出: {os.path.basename(matched_images[0])}")
-                await interaction.response.send_message(file=discord.File(matched_images[0]))
+        if matched_images:
+            logger.info(f"[MyGo] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {query}, bot 輸出: {os.path.basename(matched_images[0])}")
+            await interaction.response.send_message(file=discord.File(matched_images[0]))
+        else:
+            logger.debug(f"[MyGo] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {query}, bot 輸出: 我不知道")
+            unknown_image_path = os.path.join(self.image_folder, "我不知道.jpg")
+            if os.path.exists(unknown_image_path):
+                await interaction.response.send_message(file=discord.File(unknown_image_path))
             else:
-                logger.debug(f"[MyGo] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {query}, bot 輸出: 我不知道")
-                unknown_image_path = os.path.join(self.image_folder, "我不知道.jpg")
-                if os.path.exists(unknown_image_path):
-                    await interaction.response.send_message(file=discord.File(unknown_image_path))
-                else:
-                    await interaction.response.send_message("抱歉，找不到相關圖片，也找不到預設的 '我不知道.jpg'")
+                await interaction.response.send_message("抱歉，找不到相關圖片，也找不到預設的 '我不知道.jpg'")
 
     @send_image.autocomplete("query")
     async def query_autocomplete(self, interaction: discord.Interaction, current: str):
