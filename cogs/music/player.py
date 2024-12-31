@@ -71,18 +71,18 @@ class YTMusic(commands.Cog):
         # 動態搜索關鍵字
 
         # 搜尋前十項
-        results = await self.youtube.search_videos(current, max_results=10)
+        results = await self.youtube.search_videos(current, max_results=self.music_setting['search_count'])
         if results:
             try:
                 return [
                     app_commands.Choice(
-                        name=f"{result['title']} ⌂ {result['channel']} - {result['duration']}",
-                        value=f"{result['title']}"
+                        name = f"{str(result['title'])[:50]} ⌂ {str(result['channel'])[:30]} - {str(result['duration'])[:10]}",
+                        value=f"{str(result['title'])[:80]}"
                     )
-                    for result in results
+                    for result in results[:80]
                 ]
             except Exception as e:
-                print(f"Autocomplete 發生錯誤: {e}")
+                print(f"[音樂] 伺服器 ID： {interaction.guild.id}, Autocomplete 發生錯誤: {e}")
         return []
 
     async def add_to_queue(self, interaction, url, is_deferred=False):

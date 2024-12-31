@@ -1,3 +1,4 @@
 {
-    "display_progress_bar": false
+    "display_progress_bar": false,
+    "search_count": 10
 }

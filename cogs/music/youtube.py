@@ -13,7 +13,7 @@ class YouTubeManager:
             results = YoutubeSearch(query, max_results=max_results).to_dict()
             return results if results else []
         except Exception as e:
-            logger.error(f"YouTube搜尋失敗: {e}")
+            logger.error(f"[音樂] YouTube搜尋失敗: {e}")
             return []
 
     async def download_audio(self, url, folder, interaction):
@@ -49,7 +49,7 @@ class YouTubeManager:
             return video_info, None
 
         except Exception as e:
-            logger.error(f"[音樂] 下載失敗: {e}")
+            logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
             return None, "下載失敗"
 
     def get_thumbnail_url(self, video_id):
