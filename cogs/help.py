@@ -31,7 +31,7 @@ class Help(commands.Cog):
 🔸 畢竟是一輩子的事
 
 🎵 | **/play [YouTube-URL或關鍵字查詢]**
-🔸 播放指定的 YouTube 音樂
+🔸 播放指定的 YouTube 音樂，支援YouTube連結與關鍵字查詢
         """
 
     @app_commands.command(name="help", description="查看功能指令")
