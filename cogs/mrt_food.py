@@ -1,9 +1,11 @@
 import os
 import json
 import random
+import discord
 import urllib.parse
 from loguru import logger
 from discord.ext import commands
+from discord import app_commands
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,13 +40,6 @@ class MRT:
                 ramen_shops[line] = json.load(f)
         return ramen_shops
 
-    def get_random_station(self, line):
-        """隨機選擇某條捷運線上的一個站"""
-        if line in self.stations:
-            return f"{random.choice(self.stations[line])}"
-        else:
-            return "?"
-
     def recommend_ramen(self, station_name):
         """根據站名名稱推薦拉麵店"""
         for line, stations in self.stations.items():
@@ -60,29 +55,29 @@ class MRT:
         return f"我只知道台北拉麵的資訊"
 
 
-# MRTCog 類別，包含相關命令
 class MRTCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.mrt = MRT()  # 創建 MRT 類別實例
+        self.mrt = MRT()
 
-    @commands.command(name="捷運")
-    async def mrt_select(self, ctx, line: str):
+    @app_commands.command(name="ramen", description="推薦台北捷運站附近的拉麵")
+    @app_commands.describe(station="輸入捷運站名")
+    async def ramen_select(self, interaction: discord.Interaction, station: str):
         """根據捷運線名稱隨機選擇一個站點並發送"""
-        async with ctx.typing():
-            message = self.mrt.get_random_station(line)
-            logger.info(f"[捷運] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {line}, bot 輸出: {message}")
-            await ctx.send(message)
+        message = self.mrt.recommend_ramen(station)
+        logger.info(f"[拉麵] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {station}, bot 輸出: {message}")
+        await interaction.response.send_message(message)
+    
+    @ramen_select.autocomplete("station")
+    async def query_autocomplete(self, interaction: discord.Interaction, current: str):
+        stations = {
+        station
+        for station_list in self.mrt.stations.values()
+        for station in station_list if station.startswith(current)
+        }
+        return [app_commands.Choice(name=station, value=station) for station in list(stations)[:25]]
 
-    @commands.command(name="拉麵")
-    async def ramen_select(self, ctx, station: str):
-        """根據捷運線名稱隨機選擇一個站點並發送"""
-        async with ctx.typing():
-            message = self.mrt.recommend_ramen(station)
-            logger.info(f"[拉麵] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {station}, bot 輸出: {message}")
-            await ctx.send(message)
 
-# 註冊並加載 MRTCog
 async def setup(bot):
     await bot.add_cog(MRTCog(bot))
     
