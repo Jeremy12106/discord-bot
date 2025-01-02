@@ -102,43 +102,44 @@ class SeaTurtleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.llm = LLMCommands(bot)
-    
-    @commands.command(name="海龜湯")
-    async def seaturtle_game(self, ctx, *directions):
+
+    @app_commands.command(name="soup", description="海龜湯題目產生器")
+    @app_commands.describe(directions="設定出題方向（多個方向請以空格分隔）")
+    async def seaturtle_game(self, interaction: discord.Interaction, directions: str):
         """
         生成海龜湯題目，根據使用者指定的多個方向。
-        使用方式: 豆白 海龜湯 [出題方向1] [出題方向2] ...
+        使用方式: /soup 選擇多個出題方向
         """
-        async with ctx.typing():
-            if not directions:
-                await ctx.send("請至少提供一個出題方向，如：懸疑 恐怖 獵奇")
-                return
+        await interaction.response.defer()  # 延遲回應以避免超時
+        if not directions:
+            await interaction.followup.send("請至少提供一個出題方向，如：懸疑、恐怖、獵奇")
+            return
 
-            # 將多個方向合併成一個字串
-            direction_str = "、".join(directions)
+        direction_str = directions.replace(" ", "、")
 
-            try:
-                # 使用 LLMCommands 取得題目與解答
-                result = self.llm.get_seaturtle_question(direction_str)
-                logger.info(f"[海龜湯] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{result}")
+        try:
+            # 使用 LLMCommands 取得題目與解答
+            result = self.llm.get_seaturtle_question(direction_str)
+            logger.info(f"[海龜湯] 伺服器 ID: {interaction.guild_id}, 使用者名稱: {interaction.user.name}, 使用者輸入: {direction_str}, bot 輸出: \n{result}")
 
-                if "題目:" in result and "解答:" in result:
-                    parts = result.split("解答:")
-                    question = parts[0].replace("題目:", "").strip()
-                    answer = parts[1].strip()
+            if "題目:" in result and "解答:" in result:
+                parts = result.split("解答:")
+                question = parts[0].replace("題目:", "").strip()
+                answer = parts[1].strip()
 
-                    # 輸出題目與暴雷解答
-                    embed = discord.Embed(title="海龜湯題目", description=question, color=discord.Color.blue())
-                    await ctx.send(embed=embed)
+                # 輸出題目與暴雷內容的解答
+                embed = discord.Embed(title="海龜湯題目", description=question, color=discord.Color.blue())
+                await interaction.followup.send(embed=embed)
 
-                    spoiler_text = f"||{answer}||"  # 暴雷內容
-                    await ctx.send(f"解答（點擊顯示）：\n{spoiler_text}")
-                else:
-                    await ctx.send("生成題目時發生錯誤，請稍後再試。")
+                spoiler_text = f"||{answer}||"  # 暴雷內容
+                await interaction.followup.send(f"解答（點擊顯示）：\n{spoiler_text}")
+            else:
+                await interaction.followup.send("生成題目時發生錯誤，請稍後再試。")
 
-            except Exception as e:
-                logger.error(f"[海龜湯] 發生錯誤：{e}")
-                await ctx.send(f"發生錯誤")
+        except Exception as e:
+            logger.error(f"[海龜湯] 發生錯誤：{e}")
+            await interaction.followup.send(f"發生錯誤")
+
 
 async def setup(bot):
     await bot.add_cog(Feature(bot))
