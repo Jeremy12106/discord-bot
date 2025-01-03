@@ -36,7 +36,7 @@ class YTMusic(commands.Cog):
                 await channel.connect()
         else:
             embed = discord.Embed(title="❌ | 請先加入語音頻道！", color=discord.Color.red())
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         # 檢查是否為 URL 或使用關鍵字播放
@@ -97,7 +97,7 @@ class YTMusic(commands.Cog):
             if is_deferred:
                 await interaction.followup.send(embed=embed)
             else:
-                await interaction.response.send_message(embed=embed)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
             return False
 
         # 將檔案資訊加入佇列
