@@ -81,7 +81,7 @@ class MusicControlView(discord.ui.View):
     #     else:
     #         await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
 
-    @discord.ui.button(emoji='<:pause:1315853280852574239>', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='<:pause:1315853280852574239>', label=" 暫停", style=discord.ButtonStyle.gray)
     async def pause(self, interaction: discord.Interaction, button: discord.ui.Button):
         voice_client = self.guild.voice_client
         if voice_client:
@@ -96,7 +96,7 @@ class MusicControlView(discord.ui.View):
         else:
             await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
     
-    @discord.ui.button(emoji='<:play:1315853281519468644>', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='<:play:1315853281519468644>', label=" 播放", style=discord.ButtonStyle.gray)
     async def resume(self, interaction: discord.Interaction, button: discord.ui.Button):
         voice_client = self.guild.voice_client
         if voice_client:
@@ -115,7 +115,7 @@ class MusicControlView(discord.ui.View):
         else:
             await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
 
-    @discord.ui.button(emoji='<:skip:1315853298770776134>', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='<:skip:1315853298770776134>', label=" 下一首歌", style=discord.ButtonStyle.gray)
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
         voice_client = self.guild.voice_client
         if voice_client:
@@ -125,7 +125,7 @@ class MusicControlView(discord.ui.View):
         else:
             await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
 
-    @discord.ui.button(emoji='<:stop:1321510975123488800>', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='<:stop:1321510975123488800>', label=" 停止", style=discord.ButtonStyle.gray)
     async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
         voice_client = self.guild.voice_client
         if voice_client:
@@ -142,7 +142,7 @@ class MusicControlView(discord.ui.View):
         else:
             await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
 
-    @discord.ui.button(emoji='<:playlist:1321510957956206613>', style=discord.ButtonStyle.gray)
+    @discord.ui.button(emoji='<:playlist:1321510957956206613>', label=" 更新播放清單", style=discord.ButtonStyle.gray)
     async def show_queue(self, interaction: discord.Interaction, button: discord.ui.Button):
         queue = guild_queues.get(self.guild.id)
         if not queue or queue.empty():
