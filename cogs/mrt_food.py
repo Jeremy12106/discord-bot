@@ -18,8 +18,8 @@ class MRT:
         self.line_mapping = {
             "紅線": "red_line", "淡水信義線": "red_line",
             "藍線": "blue_line", "板南線": "blue_line",
-            "黃線": "yellow_line", "文湖線": "yellow_line",
-            "棕線": "brown_line", "新蘆線": "brown_line",
+            "黃線": "yellow_line", "環狀線": "yellow_line",
+            "棕線": "brown_line", "文湖線": "brown_line",
             "綠線": "green_line", "松山新店線": "green_line",
             "橘線": "orange_line", "中和新蘆線": "orange_line"
         }
@@ -45,13 +45,17 @@ class MRT:
         for line, stations in self.stations.items():
             if station_name in stations:
                 line = self.line_mapping.get(line)
-                ramen_list = self.ramen_shops[line].get(station_name)
-                if ramen_list:
-                    ramen = random.choice(ramen_list)
-                    query = urllib.parse.quote(f"{station_name} {ramen} 拉麵")
-                    return f"{ramen}好吃\nhttps://www.google.com/search?q={query}"
-                else:
-                    return f"{station_name}還沒有推薦的拉麵店。"
+                try:
+                    ramen_list = self.ramen_shops[line].get(station_name)
+                    if ramen_list:
+                        ramen = random.choice(ramen_list)
+                        query = urllib.parse.quote(f"{station_name} {ramen} 拉麵")
+                        return f"{ramen}好吃\nhttps://www.google.com/search?q={query}"
+                    else:
+                        return f"{station_name}還沒有推薦的拉麵店。"
+                except  Exception:
+                    logger.error(f"查詢 {station_name} 時，發生錯誤: {Exception}")
+                    return f"發生錯誤!?"
         return f"我只知道台北拉麵的資訊"
 
 
@@ -80,4 +84,10 @@ class MRTCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(MRTCog(bot))
+
+
+if __name__ == "__main__":
+    mrt = MRT()
+    a = mrt.recommend_ramen("中和")
+    print(a)
     
