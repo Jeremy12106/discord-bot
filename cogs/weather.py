@@ -11,6 +11,62 @@ from cogs.gemini_api import LLMCommands
 load_dotenv(override=True)
 weather_api_key = os.getenv('WEATHER_API_KEY')
 
+class WeatherView(discord.ui.View):
+    def __init__(self, bot, data, location, interaction, llm):
+        super().__init__(timeout=60)
+        self.bot = bot
+        self.data = data
+        self.location = location
+        self.current_index = 0
+        self.interaction = interaction
+        self.llm = llm
+
+    def format_weather_message(self, index):
+        weather_elements = self.data["records"]["location"][0]["weatherElement"]
+        time_data = weather_elements[0]["time"][index]
+        start_time = time_data["startTime"]
+        end_time = time_data["endTime"]
+        weather_state = time_data["parameter"]["parameterName"]
+        rain_prob = weather_elements[1]["time"][index]["parameter"]["parameterName"]
+        min_tem = weather_elements[2]["time"][index]["parameter"]["parameterName"]
+        comfort = weather_elements[3]["time"][index]["parameter"]["parameterName"]
+        max_tem = weather_elements[4]["time"][index]["parameter"]["parameterName"]
+
+        weather_message = (
+            f"🌍 | **地點**：{self.location}\n"
+            f"⏰ | **時間**：{start_time} ~ {end_time}\n"
+            f"🌤 | **天氣狀態**：{weather_state}\n"
+            f"🌧 | **降雨機率**：{rain_prob}%\n"
+            f"🌡 | **氣溫**：{min_tem}°C ~ {max_tem}°C\n"
+            f"😌 | **舒適度**：{comfort}\n"
+        )
+        recommend = self.llm.get_weather_recommendation(weather_message)
+        weather_message += f"💡 **出門建議**：{recommend}"
+        return weather_message
+
+    async def update_message(self):
+        weather_message = self.format_weather_message(self.current_index)
+        embed = discord.Embed(title="今日天氣預報", description=weather_message, color=discord.Color.blue())
+        await self.interaction.edit_original_response(embed=embed, view=self)
+
+    @discord.ui.button(label="⬅ 上一個時段", style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_index == 0:
+            await interaction.response.send_message("無上一個時段的資訊", ephemeral=True)
+        elif self.current_index > 0:
+            self.current_index -= 1
+            await self.update_message()
+            await interaction.response.defer()
+
+    @discord.ui.button(label="下一個時段 ➡", style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_index == 2:
+            await interaction.response.send_message("無下一個時段的資訊", ephemeral=True)
+        if self.current_index < 2:  # 最多切換到 ["time"][2]
+            self.current_index += 1
+            await self.update_message()
+            await interaction.response.defer()
+
 class Weather(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -41,29 +97,8 @@ class Weather(commands.Cog):
             data = json.loads(response.text)
             try:
                 location = data["records"]["location"][0]["locationName"]  # 地點
-                weather_elements = data["records"]["location"][0]["weatherElement"]
-                start_time = weather_elements[0]["time"][0]["startTime"]  # 開始時間
-                end_time = weather_elements[0]["time"][0]["endTime"]  # 結束時間
-                weather_state = weather_elements[0]["time"][0]["parameter"]["parameterName"]  # 天氣狀態
-                rain_prob = weather_elements[1]["time"][0]["parameter"]["parameterName"]  # 降雨機率
-                min_tem = weather_elements[2]["time"][0]["parameter"]["parameterName"]  # 最低溫
-                comfort = weather_elements[3]["time"][0]["parameter"]["parameterName"]  # 舒適度
-                max_tem = weather_elements[4]["time"][0]["parameter"]["parameterName"]  # 最高溫
-
-                # 回傳天氣資訊給使用者
-                weather_message = (
-                    f"🌍 | **地點**：{location}\n"
-                    f"⏰ | **時間**：{start_time} ~ {end_time}\n"
-                    f"🌤 | **天氣狀態**：{weather_state}\n"
-                    f"🌧 | **降雨機率**：{rain_prob}%\n"
-                    f"🌡 | **氣溫**：{min_tem}°C ~ {max_tem}°C\n"
-                    f"😌 | **舒適度**：{comfort}\n"
-                )
-                recommend = self.llm.get_weather_recommendation(weather_message)
-                weather_message += f"💡 **出門建議**：{recommend}"
-                logger.info(f"[Weather] 伺服器 ID: {interaction.guild_id}, 使用者名稱: {interaction.user.name}, bot 輸出: \n{weather_message}")
-                embed = discord.Embed(title="今日天氣預報", description=weather_message, color=discord.Color.blue())
-                await interaction.followup.send(embed=embed)
+                view = WeatherView(self.bot, data, location, interaction, self.llm)
+                await view.update_message()
             except (KeyError, IndexError):
                 error_message = "⚠ 無法取得指定城市的天氣資訊，請確認名稱是否正確。"
                 logger.error(f"[Weather] 伺服器 ID: {interaction.guild_id}, 使用者名稱: {interaction.user.name}, bot 輸出: {error_message}")
