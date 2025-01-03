@@ -6,7 +6,7 @@ from loguru import logger
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
-from cogs.gemini_api import LLMCommands
+from cogs.llm import LLMCommands
 
 load_dotenv(override=True)
 weather_api_key = os.getenv('WEATHER_API_KEY')

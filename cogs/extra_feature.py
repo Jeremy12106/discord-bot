@@ -3,7 +3,7 @@ import discord
 from loguru import logger
 from discord import app_commands
 from discord.ext import commands
-from cogs.gemini_api import LLMCommands
+from cogs.llm import LLMCommands
 
 class Feature(commands.Cog):
     def __init__(self, bot):

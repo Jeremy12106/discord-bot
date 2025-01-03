@@ -1,6 +1,6 @@
 {
     "display_progress_bar": false,
-    "search_count": 10,
+    "search_count": 10,                                     // up to 25 search
     "before_options": "-analyzeduration 0 -probesize 32",
     "options": "-ar 48000 -ac 2 -af 'anlmdn'"
 }

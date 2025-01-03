@@ -1,32 +1,35 @@
 import os
-import re
-import ast
 import json
-import absl.logging
-import google.generativeai as genai
 from loguru import logger
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# 設定 Google API 日誌級別
-absl.logging.set_verbosity('fatal')
-os.environ["GRPC_VERBOSITY"] = "NONE"
-os.environ["GLOG_minloglevel"] = "3"
+from .gpt.gemini_api import GeminiAPI
+from .gpt.openai_api import OpenaiAPI
 
+
+load_dotenv(override=True)
 PROJECT_ROOT = os.getcwd()
+SETTING_PATH = os.path.join(PROJECT_ROOT, 'config')
 
 class LLMCommands(commands.Cog):
-    def __init__(self, bot, setting_path=f'{PROJECT_ROOT}/config'):
-        load_dotenv(override=True)
+    def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv('GOOGLE_API_KEY')
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.personality = None
-        genai.configure(api_key=self.api_key)
 
-        bot_config_path = os.path.join(setting_path, "bot_config.json")
+        bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
         with open(bot_config_path, "r", encoding="utf-8") as file:
-            self.personality = json.load(file).get("personality", None)
+            config = json.load(file)
+            self.personality = config.get("personality", None)
+            self.gpt_api = config.get("gpt_api", None)
+            self.model = config.get("model", None)
+
+
+        if self.gpt_api == "openai":
+            self.gpt = OpenaiAPI(self.model)
+        elif self.gpt_api == "gemini":
+            self.gpt = GeminiAPI(self.model)
+
 
     def get_response(self, text):
         """豆白的回應"""          
@@ -41,15 +44,15 @@ class LLMCommands(commands.Cog):
             使用者輸入：{text}
             """
 
-        response = self.model.generate_content(prompt, 
-                                               safety_settings = 'BLOCK_NONE')
-        return response.text
+        response = self.gpt.get_response(prompt)
+                                               
+        return response
     
     def get_weather_recommendation(self, weather_info):
         """生成出門建議"""
         prompt = f"[用繁體中文回答] 根據以下天氣預報資訊，給予一個簡短的出門建議：\n{weather_info}"
-        response = self.model.generate_content(prompt)
-        return response.text
+        response = self.gpt.get_response(prompt)
+        return response
 
     def get_seaturtle_question(self, directions):
         """使用 LLM 生成海龜湯題目與解答"""
@@ -63,15 +66,15 @@ class LLMCommands(commands.Cog):
         題目: <簡短敘述，營造懸念>
         解答: <完整故事，包含細節與合理解釋>
         """
-        response = self.model.generate_content(prompt)
-        return response.text
+        response = self.gpt.get_response(prompt)
+        return response
 
     def get_keyword(self, text):
         prompt = f"""
         [以繁體中文提取關鍵字並用List形式輸出] {text}
         """
-        response = self.model.generate_content(prompt)
-        return response.text
+        response = self.gpt.get_response(prompt)
+        return response
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -90,19 +93,3 @@ class LLMCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
-
-
-
-if __name__ == "__main__":
-    
-    prompt = input("輸入：")
-    llm = LLMCommands(None)
-    response = llm.get_keyword(prompt)
-    print("輸出：" + response)
-
-    match = re.search(r"keywords\s*=\s*(\[[^\]]*\])", response, re.DOTALL)
-    if match:
-        list_str = match.group(1)
-        extracted_list = ast.literal_eval(list_str)
-        print(extracted_list)
-

@@ -1,6 +1,8 @@
 {
     "prefix": "!",
-    "status": "online",
+    "status": "online",     // online, idle, dnd, invisible
     "activity": null,
-    "personality": null
+    "personality": null,
+    "gpt_api": "openai",    // gemini, openai
+    "model": "gpt-4o-mini"  // gemini-1.5-flash, gpt-4o-mini
 }
