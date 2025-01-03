@@ -127,8 +127,9 @@ class YTMusic(commands.Cog):
                 self.current_song = item
                 
                 # 開始播放
+                FFMPEG_OPTIONS = {'before_options': self.music_setting['before_options'],'options': self.music_setting['options']}
                 voice_client.play(
-                    FFmpegPCMAudio(file_path, pipe=False),
+                    FFmpegPCMAudio(file_path, **FFMPEG_OPTIONS),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(interaction, file_path))
                 )
                 
