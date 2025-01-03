@@ -33,7 +33,7 @@ class MyGo(commands.Cog):
         all_images = glob.glob(pattern)
         image_names = [os.path.splitext(os.path.basename(img))[0] for img in all_images]
         matches = [name for name in image_names if current.lower() in name.lower()]
-        return [app_commands.Choice(name=match, value=match) for match in matches[:50]]
+        return [app_commands.Choice(name=match, value=match) for match in matches[:25]] # 不能超過25
 
 async def setup(bot):
     await bot.add_cog(MyGo(bot))
