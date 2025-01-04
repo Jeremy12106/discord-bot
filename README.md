@@ -93,9 +93,9 @@
 ### 音樂播放
 
 - 使用 `/play` 來播放音樂  
-    - 支援搜尋功能 
+    - 支援搜尋功能  
     <img src="assets/image/readme/music_search.gif" alt="music_search" width="640"/>  
-    - 支援URL播放
+    - 支援URL播放  
     <img src="assets/image/readme/music_url.gif" alt="music_url" width="640"/>  
 
 ### 天氣預報
