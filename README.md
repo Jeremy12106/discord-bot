@@ -5,8 +5,8 @@
 
 ## 🚀 功能
 
-🎵 音樂播放：支援 YouTube MP3 下載，讓音樂播放更加無縫順暢。  
-🤖 語言模型：整合語言模型，讓機器人對話更靈活生動。  
+🎵 音樂播放：支援播放 YouTube 音樂，讓語音更加歡樂。  
+🤖 語言模型：整合語言模型，機器人對話更靈活生動。  
 🌤️ 氣象預報：即時提供天氣資訊，給予出門建議。  
 🍜 拉麵推薦：精選台北捷運沿線的美味拉麵推薦。  
 🖼️ 梗圖搜尋：建立並管理專屬的梗圖庫，隨時分享圖片。  
@@ -46,56 +46,77 @@
 1. 在根目錄中創建 `.env` 設定你的 bot token 和其他必要參數：
     ```
     // discord bot token
-    DISCORD_TOKEN = 
+    DISCORD_TOKEN = ""
 
     // google gemini api key
-    GOOGLE_API_KEY = 
+    GOOGLE_API_KEY = ""
+
+    // openai api key
+    OPENAI_API_KEY = ""
 
     // 中央氣象署-資料開放平台 key
-    WEATHER_API_KEY = 
+    WEATHER_API_KEY = ""
 
     // 日誌紀錄等級
     LOG_LEVEL = INFO
     ```
-2. 在 `assets\data\gemini_api_setting` 檔案路經中新增 `personality.json` 來設定機器人個性
+2. 在 `config` 檔案路經中分別設定 `bot_config.json` 和 `music_config.json`
+    - `bot_config.json`
     ```
     {
-    "personality": "None"
+    "prefix": "!",          // 機器人前綴
+    "status": "online",     // 上線狀態：online, idle, dnd, invisible
+    "activity": null,       // 活動狀態
+    "personality": null,    // 機器人個性
+    "gpt_api": "openai",    // 支援的語言模型API：gemini, openai
+    "model": "gpt-4o-mini"  // 語言模型類型：gemini-1.5-flash, gpt-4o-mini
     }   
+    ```
+    - `music_config.json`
+    ```
+    {
+    "display_progress_bar": false,                          // 顯示播放進度條
+    "search_count": 10,                                     // 搜尋數量
+    "before_options": "-analyzeduration 0 -probesize 32",   // FFMPEG設定，快速分析輸入檔案參數
+    "options": "-ar 48000 -ac 2 -af 'anlmdn'"               // FFMPEG設定，設定音頻參數（採樣率、聲道數等）
+    }
     ```
 
 
 ## 🖼️ 範例截圖
 
-### 音樂播放
-
-- 使用 `豆白 play` 來播放音樂  
-![yt_music](assets/image/readme/yt_music.jpg)  
-
-### 天氣預報
-
-- 使用 `豆白 天氣 [縣市]` 來查看即時天氣  
-![weather](assets/image/readme/weather.jpg)  
-
 ### 語言模型
 
 - 使用 `豆白 [任意]` 來和豆白對話  
-![llm](assets/image/readme/llm.jpg)  
+<img src="assets/image/readme/llm.jpg" alt="llm" width="640"/>  
+
+### 音樂播放
+
+- 使用 `/play` 來播放音樂  
+    - 支援搜尋功能 
+    <img src="assets/image/readme/music_search.gif" alt="music_search" width="640"/>  
+    - 支援URL播放
+    <img src="assets/image/readme/music_url.gif" alt="music_url" width="640"/>  
+
+### 天氣預報
+
+- 使用 `/weather [縣市]` 來查看即時天氣  
+<img src="assets/image/readme/weather.jpg" alt="weather" width="640"/>  
 
 ### 拉麵推薦
 
-- 使用 `豆白 拉麵 [捷運站]` 來找好吃拉麵  
-![ramen](assets/image/readme/ramen.jpg)  
+- 使用 `/ramen [捷運站]` 來找好吃拉麵  
+<img src="assets/image/readme/ramen.jpg" alt="ramen" width="640"/>  
 
 ### 圖庫搜尋
 
-- 使用 `豆白 mygo [台詞]` 來發一輩子的圖片  
-![mygo](assets/image/readme/mygo.jpg)  
+- 使用 `/mygo [台詞]` 來發一輩子的圖片  
+<img src="assets/image/readme/mygo.jpg" alt="mygo" width="640"/>  
 
 ### 特色遊戲
 
-- 使用 `豆白 海龜湯 [出題方向]` 來一場腦力激盪的海龜湯  
-![turtlesoup](assets/image/readme/turtlesoup.jpg)  
+- 使用 `/soup [出題方向]` 來一場腦力激盪的海龜湯  
+<img src="assets/image/readme/turtlesoup.jpg" alt="turtlesoup" width="640"/>  
 
 
 ## 🤝 貢獻
