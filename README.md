@@ -87,7 +87,7 @@
 
 ### 語言模型
 
-- 使用 `豆白 [任意]` 來和豆白對話  
+- 使用 `@豆白 [訊息]` 來和豆白對話  
 <img src="assets/image/readme/llm.jpg" alt="llm" width="640"/>  
 
 ### 音樂播放
