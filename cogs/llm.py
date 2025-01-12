@@ -140,12 +140,3 @@ class LLMCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
-
-
-if __name__ == "__main__":
-    prompt = "王少兪是誰"
-    bot = None
-    llm = LLMCommands(bot = bot)
-    search_results = llm.get_search_results(prompt)
-    response = llm.get_response(prompt, search_results)
-    print(response)
