@@ -7,7 +7,7 @@ class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.help_message = """\
-🌟 | **前綴**: 豆白
+🌟 | **前綴**: @豆白
 🔸 與豆白對話！
 
 🍜 | **/ramen [捷運站名]**
