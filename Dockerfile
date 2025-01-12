@@ -1,8 +1,20 @@
 
 FROM python:3.11-slim
 
+# 更新並升級系統
+RUN apt-get update && apt-get -y upgrade
+
 # 安裝 FFmpeg
-RUN apt-get -y update && apt-get -y upgrade && apt-get install -y --no-install-recommends ffmpeg
+RUN apt-get install -y --no-install-recommends ffmpeg
+
+# 安裝 wget
+RUN apt-get install -y wget
+
+# 設定 Google Chrome 倉庫並安裝 Google Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable
 
 # 設定工作目錄
 WORKDIR /app
