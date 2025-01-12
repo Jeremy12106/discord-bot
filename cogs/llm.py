@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from loguru import logger
 from discord.ext import commands
@@ -6,6 +7,7 @@ from dotenv import load_dotenv
 
 from .gpt.gemini_api import GeminiAPI
 from .gpt.openai_api import OpenaiAPI
+from .gpt.search import SearchService
 
 
 load_dotenv(override=True)
@@ -16,6 +18,7 @@ class LLMCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.personality = None
+        self.search = SearchService()
 
         bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
         with open(bot_config_path, "r", encoding="utf-8") as file:
@@ -31,7 +34,7 @@ class LLMCommands(commands.Cog):
             self.gpt = GeminiAPI(self.model)
 
 
-    def get_response(self, text):
+    def get_response(self, text, search_results=None):
         """豆白的回應"""          
         if self.personality == None:
             prompt = f"""
@@ -43,10 +46,53 @@ class LLMCommands(commands.Cog):
             {self.personality}
             使用者輸入：{text}
             """
+        
+        if search_results is not None:
+            prompt += f"""
+            \n請根據以下參考資料提供回答：
+            參考資料：
+            {search_results}
+            """
 
         response = self.gpt.get_response(prompt)
                                                
         return response
+
+    def get_search_results(self, text):
+        prompt = """
+                [使用繁體中文回答] 請根據以下使用者輸入，判斷是否需要擷取網路即時資訊，並提供適合搜尋的關鍵字（若無需搜尋則回答"無"）。 
+                你的任務是：
+                1. 判斷使用者問題是否涉及即時性、最新資訊或超出通用知識範疇的主題。
+                2. 若需要搜尋，提供有效的搜尋關鍵字。
+                3. 若不需要搜尋，回答 {"search": false, "query":"無"}。
+
+                使用者輸入：""" + text + """
+
+                輸出格式要求：
+                - 使用 JSON 格式。
+                - 範例輸出：
+                {"search": true, "query":"2025年台灣總統選舉候選人"}
+                {"search": false, "query":"無"}
+                """
+        try:
+            # 處理回傳的訊息
+            response = self.gpt.get_response(prompt)
+            response = re.search(r"\{.*\}", response)
+            response = response.group(0).strip()
+            response = response.replace("True", "true").replace("False", "false")
+            result = json.loads(response)
+
+            if "search" in result and "query" in result:
+                if result["search"]:
+                    query = result["query"]
+                    search_results = self.search.google_search(query)
+                    return search_results
+                else:
+                    return None
+            else:
+                logger.error(f"[LLM] 模型回應的格式無效")
+        except Exception as e:
+            logger.error(f"[LLM] 發生錯誤: {e}")
     
     def get_weather_recommendation(self, weather_info):
         """生成出門建議"""
@@ -82,7 +128,8 @@ class LLMCommands(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
-                response = self.get_response(user_input)  # 使用 LLM 處理輸入
+                search_results = self.get_search_results(user_input)
+                response = self.get_response(user_input, search_results)  # 使用 LLM 處理輸入
                 logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
                     await ctx.send(response)
@@ -93,3 +140,12 @@ class LLMCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LLMCommands(bot))
+
+
+if __name__ == "__main__":
+    prompt = "王少兪是誰"
+    bot = None
+    llm = LLMCommands(bot = bot)
+    search_results = llm.get_search_results(prompt)
+    response = llm.get_response(prompt, search_results)
+    print(response)
