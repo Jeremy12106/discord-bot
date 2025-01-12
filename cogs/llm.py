@@ -85,6 +85,7 @@ class LLMCommands(commands.Cog):
             if "search" in result and "query" in result:
                 if result["search"]:
                     query = result["query"]
+                    logger.info(f"[LLM] Google 關鍵字搜尋：{query}")
                     search_results = self.search.google_search(query)
                     return search_results
                 else:
