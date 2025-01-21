@@ -3,6 +3,5 @@ __pycache__
 assets/music_temp
 config/bot_config.json
 config/music_config.json
-bin/
 log
 notes.md

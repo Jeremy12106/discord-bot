@@ -1,7 +1,6 @@
 .env
 __pycache__
 assets/
-bin/
 log/
 config/
 README.md
