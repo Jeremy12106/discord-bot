@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from .gpt.gemini_api import GeminiAPI
 from .gpt.openai_api import OpenaiAPI
-from .gpt.search import SearchService
+from .gpt.search import google_search
 
 
 load_dotenv(override=True)
@@ -18,7 +18,6 @@ class LLMCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.personality = None
-        self.search = SearchService()
 
         bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
         with open(bot_config_path, "r", encoding="utf-8") as file:
@@ -49,7 +48,7 @@ class LLMCommands(commands.Cog):
         
         if search_results is not None:
             prompt += f"""
-            \n請根據以下參考資料提供回答：
+            \n根據以下參考資料提供回答。請務必使用參考資料中的資訊，避免使用未提供的其他知識：
             參考資料：
             {search_results}
             """
@@ -85,8 +84,7 @@ class LLMCommands(commands.Cog):
             if "search" in result and "query" in result:
                 if result["search"]:
                     query = result["query"]
-                    logger.info(f"[LLM] Google 關鍵字搜尋：{query}")
-                    search_results = self.search.google_search(query)
+                    search_results = google_search(query)
                     return search_results
                 else:
                     return None
