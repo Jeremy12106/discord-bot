@@ -6,7 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from .gpt.gemini_api import GeminiAPI
-from .gpt.openai_api import OpenaiAPI
+from .gpt.github import GithubAPI
 from .gpt.search import google_search
 
 
@@ -27,8 +27,8 @@ class LLMCommands(commands.Cog):
             self.model = config.get("model", None)
 
 
-        if self.gpt_api == "openai":
-            self.gpt = OpenaiAPI(self.model)
+        if self.gpt_api == "github":
+            self.gpt = GithubAPI(self.model)
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
 
@@ -52,8 +52,9 @@ class LLMCommands(commands.Cog):
             參考資料：
             {search_results}
             """
-
-        response = self.gpt.get_response(prompt)
+            response = self.gpt.get_response(prompt, temperature=0.5)
+        else:
+            response = self.gpt.get_response(prompt, temperature=1)
                                                
         return response
 
@@ -75,7 +76,7 @@ class LLMCommands(commands.Cog):
                 """
         try:
             # 處理回傳的訊息
-            response = self.gpt.get_response(prompt)
+            response = self.gpt.get_response(prompt, temperature=0.5)
             response = re.search(r"\{.*\}", response)
             response = response.group(0).strip()
             response = response.replace("True", "true").replace("False", "false")
@@ -96,7 +97,7 @@ class LLMCommands(commands.Cog):
     def get_weather_recommendation(self, weather_info):
         """生成出門建議"""
         prompt = f"[用繁體中文回答] 根據以下天氣預報資訊，給予一個簡短的出門建議：\n{weather_info}"
-        response = self.gpt.get_response(prompt)
+        response = self.gpt.get_response(prompt, temperature=0)
         return response
 
     def get_seaturtle_question(self, directions):
@@ -111,14 +112,7 @@ class LLMCommands(commands.Cog):
         題目: <簡短敘述，營造懸念>
         解答: <完整故事，包含細節與合理解釋>
         """
-        response = self.gpt.get_response(prompt)
-        return response
-
-    def get_keyword(self, text):
-        prompt = f"""
-        [以繁體中文提取關鍵字並用List形式輸出] {text}
-        """
-        response = self.gpt.get_response(prompt)
+        response = self.gpt.get_response(prompt, temperature=1)
         return response
 
     @commands.Cog.listener()

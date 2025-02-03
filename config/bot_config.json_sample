@@ -3,6 +3,9 @@
     "status": "online",     // online, idle, dnd, invisible
     "activity": null,
     "personality": null,
-    "gpt_api": "openai",    // gemini, openai
-    "model": "gpt-4o-mini"  // gemini-1.5-flash, gpt-4o-mini
+
+    // gemini: gemini-1.5-flash, 
+    // github: gpt-4o-mini, DeepSeek-R1
+    "gpt_api": "gemini",    
+    "model": "gemini-1.5-flash"
 }
