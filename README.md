@@ -48,14 +48,16 @@
     // discord bot token
     DISCORD_TOKEN = ""
 
-    // google gemini api key
+    // google gemini, github api key 擇一
     GOOGLE_API_KEY = ""
-
-    // openai api key
-    OPENAI_API_KEY = ""
+    GITHUB_API_KEY = ""
 
     // 中央氣象署-資料開放平台 key
     WEATHER_API_KEY = ""
+
+    // google search api key
+    GOOGLE_SEARCH_API_KEY
+    GOOGLE_SEARCH_ENGINE_ID
 
     // 日誌紀錄等級
     LOG_LEVEL = INFO
