@@ -33,7 +33,7 @@
 
 1. 安裝 Python 依賴：
     ```
-    pip install -r requirements.txt
+    pip install -r requirements-dev.txt
     ```
 2. 啟動機器人：
     ```
