@@ -2,8 +2,8 @@
     "prefix": "!",
     "status": "online",     // online, idle, dnd, invisible
     "activity": null,
-    "system_prompt": "[用繁體中文回答]",
-    "personality": null,
+    "system_prompt": "[用繁體中文回答]",    // Required
+    "personality": null,    // Optional
 
     // gemini: gemini-1.5-flash, gemini-2.0-flash
     // github: gpt-4o-mini, DeepSeek-R1

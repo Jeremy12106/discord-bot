@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from .gpt.gemini_api import GeminiAPI
 from .gpt.github import GithubAPI
 from .gpt.search import google_search
+from .gpt.prompt import get_prompt
 
 
 load_dotenv(override=True)
@@ -34,31 +35,15 @@ class LLMCommands(commands.Cog):
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
 
-
     def get_response(self, text, search_results=None):
         """豆白的回應"""          
-        if self.personality == None:
-            prompt = f"""
-            {self.system_prompt}
-            使用者輸入：{text}
-            """
-        else:
-            prompt = f"""
-            {self.system_prompt} 根據以下人物設定來回答使用者輸入。
-            {self.personality}
-            使用者輸入：{text}
-            """
-        
+        prompt = get_prompt(self.system_prompt, text, self.personality, search_results)
+
         if search_results is not None:
-            prompt += f"""
-            \n根據以下參考資料提供回答。請務必使用參考資料中的資訊，避免使用未提供的其他知識：
-            參考資料：
-            {search_results}
-            """
             response = self.gpt.get_response(prompt, temperature=0.5)
         else:
             response = self.gpt.get_response(prompt, temperature=1)
-                                               
+                               
         return response
 
     def get_search_results(self, text):
