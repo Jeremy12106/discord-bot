@@ -22,9 +22,11 @@ class LLMCommands(commands.Cog):
         bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
         with open(bot_config_path, "r", encoding="utf-8") as file:
             config = json.load(file)
+            self.system_prompt = config.get("system_prompt", None)
             self.personality = config.get("personality", None)
             self.gpt_api = config.get("gpt_api", None)
             self.model = config.get("model", None)
+            self.use_search_engine = config.get("use_search_engine", False)
 
 
         if self.gpt_api == "github":
@@ -37,11 +39,12 @@ class LLMCommands(commands.Cog):
         """豆白的回應"""          
         if self.personality == None:
             prompt = f"""
-            [用繁體中文回答] {text}
+            {self.system_prompt}
+            使用者輸入：{text}
             """
         else:
             prompt = f"""
-            [用繁體中文回答] 根據以下人物設定來回答使用者輸入。
+            {self.system_prompt} 根據以下人物設定來回答使用者輸入。
             {self.personality}
             使用者輸入：{text}
             """
@@ -59,8 +62,8 @@ class LLMCommands(commands.Cog):
         return response
 
     def get_search_results(self, text):
-        prompt = """
-                [使用繁體中文回答] 請根據以下使用者輸入，判斷是否需要擷取網路即時資訊，並提供適合搜尋的關鍵字（若無需搜尋則回答"無"）。 
+        prompt = self.system_prompt + """
+                請根據以下使用者輸入，判斷是否需要擷取網路即時資訊，並提供適合搜尋的關鍵字（若無需搜尋則回答"無"）。 
                 你的任務是：
                 1. 判斷使用者問題是否涉及即時性、最新資訊或超出通用知識範疇的主題。
                 2. 若需要搜尋，提供有效的搜尋關鍵字。
@@ -117,12 +120,15 @@ class LLMCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        """當命令錯誤時，觸發該事件處理"""
+        """當命令未定義時，觸發LLM事件"""
         if isinstance(error, commands.CommandNotFound):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
-                search_results = self.get_search_results(user_input)
-                response = self.get_response(user_input, search_results)  # 使用 LLM 處理輸入
+                if self.use_search_engine:
+                    search_results = self.get_search_results(user_input)
+                else:
+                    search_results = None
+                response = self.get_response(user_input, search_results)
                 logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
                     await ctx.send(response)
