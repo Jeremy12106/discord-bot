@@ -1,5 +1,5 @@
 
-def get_prompt(system_prompt:str, text:str, personality:str=None, search_results:str=None):
+def get_prompt(system_prompt:str, text:str, personality:str=None, search_results:str=None, memory:str=None) -> str:
 
     prompt = f"{system_prompt}"
 
@@ -15,6 +15,13 @@ def get_prompt(system_prompt:str, text:str, personality:str=None, search_results
                     \n參考資料：
                     \n{search_results}\n
                     """
+        
+    if memory is not None:
+        prompt += f"""
+                    \n對話紀錄：
+                    \n{memory}
+                    """
+
     prompt += f"""
                 \n使用者輸入：{text}
                 """

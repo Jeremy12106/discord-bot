@@ -9,6 +9,7 @@ from .gpt.gemini_api import GeminiAPI
 from .gpt.github import GithubAPI
 from .gpt.search import google_search
 from .gpt.prompt import get_prompt
+from .gpt.memory import get_memory, save_memory
 
 
 load_dotenv(override=True)
@@ -28,16 +29,16 @@ class LLMCommands(commands.Cog):
             self.gpt_api = config.get("gpt_api", None)
             self.model = config.get("model", None)
             self.use_search_engine = config.get("use_search_engine", False)
-
+            self.chat_memory = config.get("chat_memory", False)
 
         if self.gpt_api == "github":
             self.gpt = GithubAPI(self.model)
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
 
-    def get_response(self, text, search_results=None):
-        """豆白的回應"""          
-        prompt = get_prompt(self.system_prompt, text, self.personality, search_results)
+    def get_response(self, text, search_results=None, memory=None):
+        """豆白的回應"""
+        prompt = get_prompt(self.system_prompt, text, self.personality, search_results, memory)
 
         if search_results is not None:
             response = self.gpt.get_response(prompt, temperature=0.5)
@@ -109,11 +110,20 @@ class LLMCommands(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
+                
                 if self.use_search_engine:
                     search_results = self.get_search_results(user_input)
                 else:
                     search_results = None
-                response = self.get_response(user_input, search_results)
+                
+                if self.chat_memory:
+                    chanel_id = ctx.channel.id
+                    memory = get_memory(chanel_id)
+                    response = self.get_response(user_input, search_results, memory)
+                    save_memory(chanel_id, user_input, search_results, response)
+                else:
+                    response = self.get_response(user_input, search_results)
+                
                 logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
                     await ctx.send(response)
