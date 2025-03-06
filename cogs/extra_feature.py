@@ -1,3 +1,5 @@
+import os
+import json
 import random
 import discord
 from loguru import logger
@@ -5,9 +7,19 @@ from discord import app_commands
 from discord.ext import commands
 from cogs.llm import LLMCommands
 
+PROJECT_ROOT = os.getcwd()
+SETTING_PATH = os.path.join(PROJECT_ROOT, 'config')
+PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
+os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
+
 class Feature(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
+        with open(bot_config_path, "r", encoding="utf-8") as file:
+            config = json.load(file)
+            self.personality = config.get("personality", None)
 
     @app_commands.command(name="choose", description="隨機幫你做選擇")
     @app_commands.describe(choices="提供選擇的選項 (以空格間隔)")
@@ -40,6 +52,35 @@ class Feature(commands.Cog):
         result = random.randint(1, sides)
         logger.info(f"[dice] 伺服器 ID: {interaction.guild.id}, 使用者名稱: {interaction.user.name}, 擲骰子面數: {sides}, bot 輸出: {result}")
         await interaction.response.send_message(f"🎲 | 你擲出了一顆 {sides} 面骰，結果 {result}。")
+
+    @app_commands.command(name="set_personality", description="設定頻道專屬的豆白個性")
+    @app_commands.describe(personality="設定豆白個性 (頻道專屬)，可使用 `/check_personality` 查看當前設定")
+    async def set_personality(self, interaction: discord.Interaction, personality: str):
+        """
+        設定頻道專屬的豆白個性。
+        """
+        data = {"personality": personality}
+        file_path = os.path.join(PERSONALITY_FOLDER, f"{interaction.channel.id}.json")
+        with open(file_path, "w", encoding="utf-8-sig") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+        logger.info(f"[個性] 伺服器 ID: {interaction.guild.id}, 頻道 ID: {interaction.channel.id},  使用者名稱: {interaction.user.name}, 設定個性: {personality}")
+        embed = discord.Embed(title="🐶 | 個性設定成功！", description=f"> 新個性：{personality}", color=discord.Color.blue())
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="check_personality", description="查看頻道專屬的豆白個性")
+    async def check_personality(self, interaction: discord.Interaction):
+        """
+        查看頻道專屬的豆白個性。
+        """
+        file_path = os.path.join(PERSONALITY_FOLDER, f"{interaction.channel.id}.json")
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8-sig") as f:
+                data = json.load(f)
+            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> {data['personality']}", color=discord.Color.blue())
+        else:
+            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> 使用預設個性: {self.personality}", color=discord.Color.blue())
+        await interaction.response.send_message(embed=embed)
 
     @commands.command(name="燒魚")
     async def sauyu(self, ctx):

@@ -3,7 +3,7 @@ import json
 import datetime
 from loguru import logger
 
-MEMORY_PATH = "assets/memory"
+MEMORY_PATH = "assets/data/memory"
 os.makedirs(MEMORY_PATH, exist_ok=True)
 
 def get_memory(channel_id, num_memories=5):

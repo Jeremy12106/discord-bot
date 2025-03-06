@@ -15,6 +15,8 @@ from .gpt.memory import get_memory, save_memory
 load_dotenv(override=True)
 PROJECT_ROOT = os.getcwd()
 SETTING_PATH = os.path.join(PROJECT_ROOT, 'config')
+PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
+os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
 
 class LLMCommands(commands.Cog):
     def __init__(self, bot):
@@ -36,10 +38,19 @@ class LLMCommands(commands.Cog):
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
 
-    def get_response(self, text, search_results=None, memory=None):
+    def get_response(self, chanel_id, text, search_results=None, memory=None):
         """豆白的回應"""
-        prompt = get_prompt(self.system_prompt, text, self.personality, search_results, memory)
+        # 檢查是否有頻道專屬的個性
+        file_path = os.path.join(PERSONALITY_FOLDER, f"{chanel_id}.json")
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8-sig") as file:
+                data = json.load(file)
+                personality = data.get("personality", None)
+            prompt = get_prompt(self.system_prompt, text, personality, search_results, memory)
+        else:
+            prompt = get_prompt(self.system_prompt, text, self.personality, search_results, memory)
 
+        # 如果有搜尋結果，則使用較低的溫度生成回應
         if search_results is not None:
             response = self.gpt.get_response(prompt, temperature=0.5)
         else:
@@ -47,22 +58,30 @@ class LLMCommands(commands.Cog):
                                
         return response
 
-    def get_search_results(self, text):
-        prompt = self.system_prompt + """
-                請根據以下使用者輸入，判斷是否需要擷取網路即時資訊，並提供適合搜尋的關鍵字（若無需搜尋則回答"無"）。 
-                你的任務是：
-                1. 判斷使用者問題是否涉及即時性、最新資訊或超出通用知識範疇的主題。
-                2. 若需要搜尋，提供有效的搜尋關鍵字。
-                3. 若不需要搜尋，回答 {"search": false, "query":"無"}。
+    def get_search_results(self, text, channel_id=None):
+        prompt = self.system_prompt + """\n
+                    請根據以下使用者輸入及對話歷史，判斷是否需要擷取網路即時資訊，並提供適合搜尋的關鍵字（若無需搜尋則回答"無"）。 
+                    你的任務是：
+                    1. 判斷使用者問題是否涉及即時性、最新資訊或超出通用知識範疇的主題。
+                    2. 若需要搜尋，提供有效的搜尋關鍵字，並根據對話上下文調整搜尋內容。
+                    3. 若不需要搜尋，回答 {"search": false, "query":"無"}。
+                    """
+        if self.chat_memory:
+            prompt += f"""\n
+                    ### 對話歷史：
+                    {get_memory(channel_id)}
+                    """
+        prompt +=   """\n
+                    ### 使用者輸入：
+                    """ + text + """
 
-                使用者輸入：""" + text + """
-
-                輸出格式要求：
-                - 使用 JSON 格式。
-                - 範例輸出：
-                {"search": true, "query":"2025年台灣總統選舉候選人"}
-                {"search": false, "query":"無"}
-                """
+                    ### 輸出格式要求：
+                    - 使用 JSON 格式。
+                    - 範例輸出：
+                    {"search": true, "query":"2025年台灣總統選舉候選人"}
+                    {"search": true, "query":"昨天 NBA 勇士隊比賽結果"}
+                    {"search": false, "query":"無"}
+                    """
         try:
             # 處理回傳的訊息
             response = self.gpt.get_response(prompt, temperature=0.5)
@@ -110,19 +129,19 @@ class LLMCommands(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
+                chanel_id = ctx.channel.id
                 
                 if self.use_search_engine:
-                    search_results = self.get_search_results(user_input)
+                    search_results = self.get_search_results(user_input, chanel_id)
                 else:
                     search_results = None
                 
                 if self.chat_memory:
-                    chanel_id = ctx.channel.id
                     memory = get_memory(chanel_id)
-                    response = self.get_response(user_input, search_results, memory)
+                    response = self.get_response(chanel_id, user_input, search_results, memory)
                     save_memory(chanel_id, user_input, search_results, response)
                 else:
-                    response = self.get_response(user_input, search_results)
+                    response = self.get_response(chanel_id, user_input, search_results)
                 
                 logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
