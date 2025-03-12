@@ -27,7 +27,7 @@ def get_memory(channel_id, num_memories=5):
         logger.error(f"[記憶] 讀取時發生錯誤: {e}")
         return None
 
-def save_memory(channel_id, user_input, search_results, response, max_memories=100):
+def save_memory(channel_id, user_nick, user_input, search_results, response, max_memories=100):
     file_path = os.path.join(MEMORY_PATH, f"{channel_id}.json")
     memories = []
     
@@ -40,6 +40,7 @@ def save_memory(channel_id, user_input, search_results, response, max_memories=1
     
     # 紀錄記憶
     new_memory = {
+        "使用者": user_nick,
         "使用者輸入": user_input,
         "參考資料": search_results,
         "機器人回覆": response,

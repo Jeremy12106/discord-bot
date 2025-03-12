@@ -38,7 +38,7 @@ class LLMCommands(commands.Cog):
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
 
-    def get_response(self, chanel_id, text, search_results=None, memory=None):
+    def get_response(self, chanel_id, user_nick, text, search_results=None, memory=None):
         """豆白的回應"""
         # 檢查是否有頻道專屬的個性
         file_path = os.path.join(PERSONALITY_FOLDER, f"{chanel_id}.json")
@@ -46,9 +46,9 @@ class LLMCommands(commands.Cog):
             with open(file_path, "r", encoding="utf-8-sig") as file:
                 data = json.load(file)
                 personality = data.get("personality", None)
-            prompt = get_prompt(self.system_prompt, text, personality, search_results, memory)
+            prompt = get_prompt(self.system_prompt, user_nick, text, personality, search_results, memory)
         else:
-            prompt = get_prompt(self.system_prompt, text, self.personality, search_results, memory)
+            prompt = get_prompt(self.system_prompt, user_nick, text, self.personality, search_results, memory)
 
         # 如果有搜尋結果，則使用較低的溫度生成回應
         if search_results is not None:
@@ -130,6 +130,7 @@ class LLMCommands(commands.Cog):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
             async with ctx.typing():
                 chanel_id = ctx.channel.id
+                user_nick = ctx.author.display_name
                 
                 if self.use_search_engine:
                     search_results = self.get_search_results(user_input, chanel_id)
@@ -138,10 +139,10 @@ class LLMCommands(commands.Cog):
                 
                 if self.chat_memory:
                     memory = get_memory(chanel_id)
-                    response = self.get_response(chanel_id, user_input, search_results, memory)
-                    save_memory(chanel_id, user_input, search_results, response)
+                    response = self.get_response(chanel_id, user_nick, user_input, search_results, memory)
+                    save_memory(chanel_id, user_nick, user_input, search_results, response)
                 else:
-                    response = self.get_response(chanel_id, user_input, search_results)
+                    response = self.get_response(chanel_id, user_nick, user_input, search_results)
                 
                 logger.info(f"[LLM] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: \n{response[:100]}")
                 if response:
