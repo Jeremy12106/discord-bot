@@ -46,20 +46,9 @@ class YTMusic(commands.Cog):
             if not is_valid:
                 return
         else:
-            # 使用者選擇的關鍵字結果直接播放
-            await interaction.response.defer()
-            song = song.split("⌂", 1)[0]
-            results = await self.youtube.search_videos(song)
-            if results:
-                selected_result = results[0]
-                video_url = f"https://www.youtube.com{selected_result['url_suffix']}"
-                is_valid = await self.add_to_queue(interaction, video_url, is_deferred=True)
-                if not is_valid:
-                    return
-            else:
-                embed = discord.Embed(title="❌ | 未找到相關影片", color=discord.Color.red())
-                await interaction.followup.send(embed=embed)
-                return
+            embed = discord.Embed(title="❌ | 請輸入有效的Youtube連結！", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
 
         # 播放音樂
         voice_client = interaction.guild.voice_client
@@ -77,7 +66,7 @@ class YTMusic(commands.Cog):
                 return [
                     app_commands.Choice(
                         name = f"{str(result['title'])[:50]} ⌂ {str(result['channel'])[:30]} - {str(result['duration'])[:10]}",
-                        value=f"{str(result['title'])[:80]}"
+                        value=f"https://www.youtube.com{result['url_suffix']}"
                     )
                     for result in results[:80]
                 ]
