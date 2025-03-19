@@ -1,29 +1,31 @@
 
 def get_prompt(system_prompt:str, user_nick:str, text:str, personality:str=None, search_results:str=None, memory:str=None) -> str:
 
-    prompt = f"{system_prompt}"
+    prompt = f"""
+                [系統設定]
+                \n{system_prompt}\n
+                """
 
     if personality is not None:
         prompt += f"""
-                    \n根據以下人物設定來回答使用者輸入。
+                    \n[個性設定]
                     \n{personality}\n
-                    """
-        
-    if search_results is not None:
-        prompt += f"""
-                    \n根據以下參考資料提供回答。請務必使用參考資料中的資訊，避免使用未提供的其他知識：
-                    \n參考資料：
-                    \n{search_results}\n
                     """
         
     if memory is not None:
         prompt += f"""
-                    \n對話紀錄：
-                    \n{memory}
+                    \n[歷史對話] （最舊的在上，最新的在下）
+                    \n{memory}\n
+                    """
+    
+    if search_results is not None:
+        prompt += f"""
+                    \n[搜尋結果]
+                    \n{search_results}\n
                     """
 
     prompt += f"""
-                \n使用者：{user_nick}
-                \n使用者輸入：{text}
+                \n[使用者輸入]
+                \n{user_nick}：{text}
                 """
     return prompt

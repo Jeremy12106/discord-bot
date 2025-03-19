@@ -16,7 +16,7 @@ def get_memory(channel_id, num_memories=5):
             memories = json.load(f)
             memories = memories[-num_memories:] if memories else []
             for i, memory in enumerate(memories):
-                memory_str = f"歷史對話 {len(memories)-i}"
+                memory_str = f"使用者：{memory['使用者']}"
                 memory_str += f"\n使用者輸入：{memory['使用者輸入']}"
                 memory_str += f"\n參考資料：{memory['參考資料']}" if memory['參考資料'] else "None"
                 memory_str += f"\n機器人回覆：{memory['機器人回覆']}"
