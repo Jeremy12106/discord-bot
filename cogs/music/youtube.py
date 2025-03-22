@@ -27,11 +27,11 @@ class YouTubeManager:
                 return None, "影片時間過長！超過 30 分鐘"
 
             audio_stream = yt.streams.get_audio_only()
-            file_path = os.path.join(folder, f"{yt.video_id}.mp3")
+            file_path = os.path.join(folder, f"{yt.video_id}.mp4")
 
             # 避免重複下載
             if not os.path.exists(file_path):
-                audio_stream.download(output_path=folder, filename=f"{yt.video_id}.mp3")
+                audio_stream.download(output_path=folder, filename=f"{yt.video_id}.mp4")
 
             # 返回影片資訊
             video_info = {

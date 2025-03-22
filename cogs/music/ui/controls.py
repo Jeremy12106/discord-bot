@@ -54,33 +54,6 @@ class MusicControlView(discord.ui.View):
             self.current_embed.color = color
             await self.message.edit(embed=self.current_embed)
 
-    # def add_progress_select(self):
-    #     """添加進度條選擇器"""
-    #     if hasattr(self.cog, 'current_song'):
-    #         progress_select = ProgressSelect(self.cog.current_song["duration"], self.cog)
-    #         self.add_item(progress_select)
-
-    # @discord.ui.button(emoji='⏮️', style=discord.ButtonStyle.gray)
-    # async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     voice_client = self.guild.voice_client
-    #     if voice_client:
-    #         # 重置當前歌曲
-    #         voice_client.stop()
-    #         # 將當前歌曲重新加入隊列前端
-    #         if hasattr(self.cog, 'current_song') and self.cog.current_song:
-    #             queue = guild_queues.get(self.guild.id)
-    #             if queue:
-    #                 new_queue = asyncio.Queue()
-    #                 await new_queue.put(self.cog.current_song)
-    #                 while not queue.empty():
-    #                     item = await queue.get()
-    #                     await new_queue.put(item)
-    #                 guild_queues[self.guild.id] = new_queue
-    #         await self.update_embed(interaction, f"⏮️ {interaction.user.name} 返回上一首")
-    #         await interaction.response.defer()
-    #     else:
-    #         await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
-
     @discord.ui.button(emoji='<:pause:1315853280852574239>', label=" 暫停", style=discord.ButtonStyle.gray)
     async def pause(self, interaction: discord.Interaction, button: discord.ui.Button):
         voice_client = self.guild.voice_client
@@ -149,14 +122,8 @@ class MusicControlView(discord.ui.View):
             await interaction.response.send_message("目前沒有歌曲在播放清單中", ephemeral=True)
             return
 
-        # 複製隊列內容而不消耗原隊列
-        queue_copy = []
-        temp_queue = asyncio.Queue()
-        while not queue.empty():
-            item = await queue.get()
-            queue_copy.append(item)
-            await temp_queue.put(item)
-        guild_queues[self.guild.id] = temp_queue
+        # 直接獲取隊列內容的副本而不修改原隊列
+        queue_copy = list(queue._queue)
 
         # 更新播放清單到當前 embed
         if self.current_embed and self.message:
