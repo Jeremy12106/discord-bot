@@ -3,6 +3,7 @@ import json
 import discord
 import asyncio
 from loguru import logger
+
 from ..queue import guild_queues
 
 PROJECT_ROOT = os.getcwd()
@@ -141,3 +142,68 @@ class MusicControlView(discord.ui.View):
             await interaction.response.defer()
         else:
             await interaction.response.send_message("無法更新播放清單", ephemeral=True)
+
+class RadioControlView(discord.ui.View):
+    def __init__(self, interaction: discord.Interaction, cog):
+        super().__init__(timeout=None)
+        self.guild = interaction.guild
+        self.cog = cog
+        self.current_position = 0
+        self.message = None
+        self.update_task = None
+        self.current_embed = None
+
+        music_config_path = os.path.join(SETTING_PATH, "music_config.json")
+        with open(music_config_path, "r", encoding="utf-8") as file:
+            self.music_setting = json.load(file)
+
+    async def update_embed(self, interaction: discord.Interaction, title: str, color: discord.Color = discord.Color.blue()):
+        if self.current_embed and self.message:
+            self.current_embed.title = title
+            self.current_embed.color = color
+            await self.message.edit(embed=self.current_embed)
+
+    @discord.ui.button(emoji='<:pause:1315853280852574239>', label=" 暫停", style=discord.ButtonStyle.gray)
+    async def pause(self, interaction: discord.Interaction, button: discord.ui.Button):
+        voice_client = self.guild.voice_client
+        if voice_client:
+            if voice_client.is_playing():
+                voice_client.pause()
+                await self.update_embed(interaction, f"⏸️ | {interaction.user.name} 暫停了音樂")
+                if self.update_task:
+                    self.update_task.cancel()
+            elif voice_client.is_paused():
+                await interaction.response.send_message("❌ 已暫停音樂！", ephemeral=True)
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
+    
+    @discord.ui.button(emoji='<:play:1315853281519468644>', label=" 播放", style=discord.ButtonStyle.gray)
+    async def resume(self, interaction: discord.Interaction, button: discord.ui.Button):
+        voice_client = self.guild.voice_client
+        if voice_client:
+            if voice_client.is_playing():
+                await interaction.response.send_message("❌ 正在播放音樂！", ephemeral=True)
+            elif voice_client.is_paused():
+                voice_client.resume()
+                await self.update_embed(interaction, f"▶️ | {interaction.user.name} 繼續了音樂")
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)
+
+    @discord.ui.button(emoji='<:stop:1321510975123488800>', label=" 停止", style=discord.ButtonStyle.gray)
+    async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
+        voice_client = self.guild.voice_client
+        if voice_client:
+            # 清空播放隊列
+            queue = guild_queues.get(self.guild.id)
+            if queue:
+                while not queue.empty():
+                    await queue.get()
+            # 停止播放
+            voice_client.stop()
+            await voice_client.disconnect()
+            await self.update_embed(interaction, f"⏹️ | {interaction.user.name} 停止了播放", discord.Color.red())
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ 沒有正在播放的音樂！", ephemeral=True)

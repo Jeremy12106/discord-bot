@@ -1,4 +1,5 @@
 import os
+import yt_dlp
 from loguru import logger
 from pytubefix import YouTube
 from youtube_search import YoutubeSearch
@@ -55,3 +56,18 @@ class YouTubeManager:
     def get_thumbnail_url(self, video_id):
         """獲取影片縮圖URL"""
         return f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+    
+    async def get_stream_audio(self, url, interaction):
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'quiet': True,
+            'extract_flat': False
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                return info['url'] if 'url' in info else None
+        except:
+            logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 獲取音訊串流URL失敗")
+            return None    
+        

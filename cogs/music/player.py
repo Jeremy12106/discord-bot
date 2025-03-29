@@ -1,10 +1,9 @@
 import os
 import asyncio
-import discord
 import json
-from discord import FFmpegPCMAudio
+import discord
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, FFmpegPCMAudio
 from loguru import logger
 
 from .queue import get_guild_queue_and_folder, guild_queues
@@ -33,6 +32,20 @@ class YTMusic(commands.Cog):
         # 檢查使用者是否已在語音頻道
         if interaction.user.voice:
             channel = interaction.user.voice.channel
+            
+            # 如果在播放收音機，先停止
+            voice_client = interaction.guild.voice_client
+            if voice_client and voice_client.is_playing():
+                # 檢查是否有Radio cog在播放
+                radio_cog = self.bot.get_cog('Radio')
+                if radio_cog and radio_cog.current_song:
+                    voice_client.stop()
+                    radio_cog.current_song = None
+                    if radio_cog.current_message:
+                        await radio_cog.current_message.delete()
+                        radio_cog.current_message = None
+                    
+            # 連接語音頻道
             if interaction.guild.voice_client is None:
                 await channel.connect()
         else:
