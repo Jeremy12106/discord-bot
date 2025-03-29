@@ -22,7 +22,7 @@ class Radio(commands.Cog):
         try:
             with open('config/music_config.json', 'r', encoding='utf-8') as f:
                 self.config = json.load(f)
-            self.lofi_stations = self.config['radio_station']['lofi_girl']
+            self.lofi_stations = self.config['radio_station']
         except Exception as e:
             self.config = {}
             self.lofi_stations = {}
