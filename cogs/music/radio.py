@@ -17,6 +17,7 @@ class Radio(commands.Cog):
         self.current_song = None
         self.current_message = None
         self.load_config()
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     def load_config(self):
         try:

@@ -25,6 +25,7 @@ class YTMusic(commands.Cog):
             self.music_setting = json.load(file)
         
         self.youtube = YouTubeManager(time_limit=self.music_setting.get("time_limit", 1800))
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="play", description="播放音樂")
     @app_commands.describe(song="輸入網址或關鍵字")

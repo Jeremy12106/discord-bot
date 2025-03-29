@@ -20,6 +20,7 @@ class WeatherView(discord.ui.View):
         self.current_index = 0
         self.interaction = interaction
         self.llm = llm
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     def format_weather_message(self, index):
         weather_elements = self.data["records"]["location"][0]["weatherElement"]

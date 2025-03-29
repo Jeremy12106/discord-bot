@@ -9,6 +9,7 @@ class MyGo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.image_folder = 'assets/image/mygo'
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="mygo", description="畢竟是一輩子的事")
     @app_commands.describe(query="輸入關鍵字")

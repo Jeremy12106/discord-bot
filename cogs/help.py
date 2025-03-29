@@ -1,7 +1,7 @@
-
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger
 
 class Help(commands.Cog):
     def __init__(self, bot):
@@ -31,6 +31,7 @@ class Help(commands.Cog):
 🎵 | **/play [YouTube-URL或關鍵字查詢]**
 🔸 播放指定的 YouTube 音樂，支援YouTube連結與關鍵字查詢
         """
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="help", description="查看功能指令")
     async def slash_help(self, interaction: discord.Interaction):

@@ -20,6 +20,8 @@ class Feature(commands.Cog):
         with open(bot_config_path, "r", encoding="utf-8") as file:
             config = json.load(file)
             self.personality = config.get("personality", None)
+        
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="choose", description="隨機幫你做選擇")
     @app_commands.describe(choices="提供選擇的選項 (以空格間隔)")
@@ -94,6 +96,7 @@ class UltimateNumberGame(commands.Cog):
         self.lower_bound = None
         self.upper_bound = None
         self.game_active = False
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @commands.command(name="終極密碼")
     async def start_game(self, ctx):
@@ -143,6 +146,7 @@ class SeaTurtleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.llm = LLMCommands(bot)
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="soup", description="海龜湯題目產生器")
     @app_commands.describe(directions="設定出題方向（多個方向請以空格分隔）")

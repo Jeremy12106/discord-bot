@@ -23,6 +23,7 @@ class MRT:
             "綠線": "green_line", "松山新店線": "green_line",
             "橘線": "orange_line", "中和新蘆線": "orange_line"
         }
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     def load_stations(self):
         """載入捷運線對應的站資料"""

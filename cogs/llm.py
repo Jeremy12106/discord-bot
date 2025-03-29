@@ -37,6 +37,7 @@ class LLMCommands(commands.Cog):
             self.gpt = GithubAPI(self.model)
         elif self.gpt_api == "gemini":
             self.gpt = GeminiAPI(self.model)
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     def get_response(self, chanel_id, user_nick, text, search_results=None, memory=None):
         """豆白的回應"""
