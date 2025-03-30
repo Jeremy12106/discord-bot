@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import discord
 from discord.ext import commands
 from discord import app_commands, FFmpegPCMAudio
@@ -92,7 +93,7 @@ class RadioSelectView(discord.ui.View):
                 )
             )
             logger.info(f"[LOFI] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 播放 {self.select.values[0]}")
-            
+
             # Update message with final state
             embed = discord.Embed(
                 title=f"✅ | 已選擇電台：{selected_station['emoji']} {self.select.values[0]} By {selected_station['description']}",
@@ -136,9 +137,17 @@ class RadioSelectView(discord.ui.View):
             view.current_embed = embed
             
             # Send message and store reference
+            await asyncio.sleep(1)
             message = await interaction.followup.send(embed=embed, view=view)
             view.message = message
             self.radio_cog.current_message = message
+
+            # Cancel any existing disconnect task from YTMusic cog  
+            await asyncio.sleep(10)
+            yt_music_cog = self.radio_cog.bot.get_cog('YTMusic')
+            if yt_music_cog and hasattr(yt_music_cog, 'disconnect_task'):
+                yt_music_cog.disconnect_task.cancel()
+                delattr(yt_music_cog, 'disconnect_task')
             
         except Exception as e:
             logger.error(f"Error during playback: {e}")
