@@ -1,5 +1,6 @@
 .env
 __pycache__
+assets/font
 assets/music_temp
 assets/data/memory
 assets/data/personality
