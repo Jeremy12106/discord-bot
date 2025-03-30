@@ -24,9 +24,11 @@ class LLMService(commands.Cog):
         self.personality = config.bot_config.get("personality", None)
         self.gpt_api = config.bot_config.get("gpt_api", None)
         self.model = config.bot_config.get("model", None)
-        self.use_search_engine = config.bot_config.get("use_search_engine", False)
         self.chat_memory = config.bot_config.get("chat_memory", False)
-
+        
+        has_search_keys = bool(os.getenv("GOOGLE_SEARCH_API_KEY") and os.getenv("GOOGLE_SEARCH_ENGINE_ID"))
+        self.use_search_engine = has_search_keys and config.bot_config.get("use_search_engine", False)
+        
         if self.gpt_api == "github":
             self.gpt = GithubAPI(self.model)
         elif self.gpt_api == "gemini":
