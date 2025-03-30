@@ -1,9 +1,12 @@
+import os
+import io
+import textwrap
+import requests
 import discord
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-import io
-import requests
-import textwrap
+
+PROJECT_ROOT = os.getcwd()
 
 class Quote(commands.Cog):
     def __init__(self, bot):
@@ -61,8 +64,8 @@ class Quote(commands.Cog):
 
         # 字體設定
         try:
-            font_text = ImageFont.truetype(r"assets\font\TW-Kai-98_1.ttf", 28)
-            font_author = ImageFont.truetype(r"assets\font\TW-Kai-98_1.ttf", 22)
+            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 28)
+            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 22)
         except IOError:
             font_text = ImageFont.load_default()
             font_author = ImageFont.load_default()
