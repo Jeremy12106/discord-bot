@@ -7,7 +7,7 @@ from loguru import logger
 from discord.ext import commands
 from discord import app_commands
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.getcwd()
 
 class MRT:
     def __init__(self, data_path=f'{PROJECT_ROOT}/assets/data/mrt_food'):

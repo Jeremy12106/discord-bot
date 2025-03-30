@@ -1,9 +1,7 @@
 import os
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
-from dotenv import load_dotenv
 
-load_dotenv(override=True)
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"
 

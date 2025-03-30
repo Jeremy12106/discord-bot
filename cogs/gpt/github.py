@@ -3,9 +3,6 @@ from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage
 from azure.ai.inference.models import UserMessage
 from azure.core.credentials import AzureKeyCredential
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
 
 class GithubAPI():
     def __init__(self, model):

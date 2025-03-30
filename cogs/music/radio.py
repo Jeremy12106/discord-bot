@@ -9,6 +9,8 @@ from .common import extract_youtube_id
 from .youtube import YouTubeManager
 from .ui.controls import RadioControlView
 
+from discord_bot import config
+
 class Radio(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -16,17 +18,10 @@ class Radio(commands.Cog):
         self.youtube = YouTubeManager()
         self.current_song = None
         self.current_message = None
-        self.load_config()
+        
+        self.music_setting = config.music_config
+        self.radio_stations = config.music_config.get("radio_station", None)
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
-
-    def load_config(self):
-        try:
-            with open('config/music_config.json', 'r', encoding='utf-8') as f:
-                self.config = json.load(f)
-            self.lofi_stations = self.config['radio_station']
-        except Exception as e:
-            self.config = {}
-            self.lofi_stations = {}
 
     @app_commands.command(name="lofi", description="播放Lofi音樂電台")
     async def lofi(self, interaction: discord.Interaction):    
@@ -52,10 +47,11 @@ class RadioSelectView(discord.ui.View):
     def __init__(self, radio_cog, *, timeout=180):
         super().__init__(timeout=timeout)
         self.radio_cog = radio_cog
+        self.music_setting = radio_cog.music_setting
         
         # Create options list from config
         options = []
-        for station_name, station_info in radio_cog.lofi_stations.items():
+        for station_name, station_info in radio_cog.radio_stations.items():
             options.append(
                 discord.SelectOption(
                     label=station_name,
@@ -77,13 +73,13 @@ class RadioSelectView(discord.ui.View):
     async def select_callback(self, interaction: discord.Interaction):
         try:
             await interaction.response.defer(ephemeral=False)
-            selected_station = self.radio_cog.lofi_stations[self.select.values[0]]
+            selected_station = self.radio_cog.radio_stations[self.select.values[0]]
             
             # Get stream URL and setup audio
             stream_url = await self.radio_cog.youtube.get_stream_audio(selected_station['url'], interaction)
             voice_client = interaction.guild.voice_client
-            options = self.radio_cog.config.get('options', '-ar 48000 -ac 2')
-            before_options = self.radio_cog.config.get('before_options')
+            options = self.music_setting.get('options', '-ar 48000 -ac 2')
+            before_options = self.music_setting.get('before_options', None)
             
             if voice_client.is_playing():
                 voice_client.stop()

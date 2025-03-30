@@ -5,21 +5,17 @@ import discord
 from loguru import logger
 from discord import app_commands
 from discord.ext import commands
-from cogs.llm import LLMCommands
+
+from discord_bot import config
 
 PROJECT_ROOT = os.getcwd()
-SETTING_PATH = os.path.join(PROJECT_ROOT, 'config')
 PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
 os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
 
 class Feature(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-        bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
-        with open(bot_config_path, "r", encoding="utf-8") as file:
-            config = json.load(file)
-            self.personality = config.get("personality", None)
+        self.personality = config.bot_config.get("personality", None)
         
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
@@ -145,11 +141,11 @@ class UltimateNumberGame(commands.Cog):
 class SeaTurtleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.llm = LLMCommands(bot)
+        self.llm = bot.get_cog('LLMService')
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="soup", description="海龜湯題目產生器")
-    @app_commands.describe(directions="設定出題方向（多個方向請以空格分隔）")
+    @app_commands.describe(directions="設定出題方向")
     async def seaturtle_game(self, interaction: discord.Interaction, directions: str):
         """
         生成海龜湯題目，根據使用者指定的多個方向。

@@ -3,7 +3,6 @@ import re
 import json
 from loguru import logger
 from discord.ext import commands
-from dotenv import load_dotenv
 
 from .gpt.gemini_api import GeminiAPI
 from .gpt.github import GithubAPI
@@ -11,27 +10,22 @@ from .gpt.search import google_search
 from .gpt.prompt import get_prompt
 from .gpt.memory import get_memory, save_memory
 
+from discord_bot import config
 
-load_dotenv(override=True)
 PROJECT_ROOT = os.getcwd()
-SETTING_PATH = os.path.join(PROJECT_ROOT, 'config')
 PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
 os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
 
-class LLMCommands(commands.Cog):
+class LLMService(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.personality = None
 
-        bot_config_path = os.path.join(SETTING_PATH, "bot_config.json")
-        with open(bot_config_path, "r", encoding="utf-8") as file:
-            config = json.load(file)
-            self.system_prompt = config.get("system_prompt", None)
-            self.personality = config.get("personality", None)
-            self.gpt_api = config.get("gpt_api", None)
-            self.model = config.get("model", None)
-            self.use_search_engine = config.get("use_search_engine", False)
-            self.chat_memory = config.get("chat_memory", False)
+        self.system_prompt = config.bot_config.get("system_prompt", None)
+        self.personality = config.bot_config.get("personality", None)
+        self.gpt_api = config.bot_config.get("gpt_api", None)
+        self.model = config.bot_config.get("model", None)
+        self.use_search_engine = config.bot_config.get("use_search_engine", False)
+        self.chat_memory = config.bot_config.get("chat_memory", False)
 
         if self.gpt_api == "github":
             self.gpt = GithubAPI(self.model)
@@ -154,4 +148,4 @@ class LLMCommands(commands.Cog):
             raise error
 
 async def setup(bot):
-    await bot.add_cog(LLMCommands(bot))
+    await bot.add_cog(LLMService(bot))

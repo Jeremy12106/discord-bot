@@ -1,4 +1,3 @@
-from loguru import logger
 from .music.player import YTMusic
 from .music.radio import Radio
 

@@ -1,14 +1,11 @@
 import os
 import json
-import discord
 import requests
-from loguru import logger
-from dotenv import load_dotenv
-from discord.ext import commands
+import discord
 from discord import app_commands
-from cogs.llm import LLMCommands
+from discord.ext import commands
+from loguru import logger
 
-load_dotenv(override=True)
 weather_api_key = os.getenv('WEATHER_API_KEY')
 
 class WeatherView(discord.ui.View):
@@ -20,7 +17,6 @@ class WeatherView(discord.ui.View):
         self.current_index = 0
         self.interaction = interaction
         self.llm = llm
-        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     def format_weather_message(self, index):
         weather_elements = self.data["records"]["location"][0]["weatherElement"]
@@ -71,7 +67,8 @@ class WeatherView(discord.ui.View):
 class Weather(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.llm = LLMCommands(bot)
+        self.llm = bot.get_cog('LLMService')
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="weather", description="查詢指定地區的天氣預報")
     @app_commands.choices(region=[

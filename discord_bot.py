@@ -1,20 +1,18 @@
 import os
 import json
-import discord
 import asyncio
-from loguru import logger
+import discord
 from dotenv import load_dotenv
 from discord.ext import commands
+from loguru import logger
+
+from config.config import ConfigManager
 
 # 載入設定檔
-PROJECT_ROOT = os.getcwd()
-SETTING_PATH=f"{PROJECT_ROOT}/config"
-music_config_path = os.path.join(SETTING_PATH, "bot_config.json")
-with open(music_config_path, "r", encoding="utf-8") as file:
-    bot_config = json.load(file)
+config = ConfigManager()
 
 # 載入環境變數
-load_dotenv()
+load_dotenv(override=True)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # 設定系統日誌
@@ -26,7 +24,7 @@ logger.add(log_path, level = level, format="{time} | {level} | {message}", rotat
 intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
-bot = commands.Bot(command_prefix=bot_config['prefix'], help_command=None, intents=intents)
+bot = commands.Bot(command_prefix=config.bot_config['prefix'], help_command=None, intents=intents)
 
 status_dict = {
     'online': discord.Status.online,
@@ -38,9 +36,9 @@ status_dict = {
 @bot.event
 async def on_ready():
     logger.info(f"已成功登入為 {bot.user}！")
-    game = discord.Game(bot_config['activity'])
+    game = discord.Game(config.bot_config['activity'])
     await bot.tree.sync()
-    await bot.change_presence(status=status_dict[bot_config['status']], activity=game)
+    await bot.change_presence(status=status_dict[config.bot_config['status']], activity=game)
 
 @bot.command()
 async def hello(ctx):
@@ -56,8 +54,20 @@ async def ping(ctx):
 
 # 載入功能
 async def load_extensions():
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
+    all_cogs = os.listdir("./cogs")
+    
+    # 優先載入
+    priority_cogs = ['llm.py']
+    for filename in priority_cogs:
+        if filename in all_cogs:
+            await bot.load_extension(f"cogs.{filename[:-3]}")
+        else:
+            logger.error(f"初始化載入失敗: 無效的檔案 {filename}")
+            continue
+
+    # 依序載入
+    for filename in all_cogs:
+        if filename.endswith(".py") and filename not in priority_cogs:
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
 async def main():

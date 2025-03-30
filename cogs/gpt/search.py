@@ -1,10 +1,8 @@
 import os
-from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from loguru import logger
 
 # 讀取 API 金鑰與 CSE ID
-load_dotenv(override=True)
 MY_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY")
 MY_CSE_ID = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
 

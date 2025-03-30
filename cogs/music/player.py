@@ -10,19 +10,14 @@ from .queue import get_guild_queue_and_folder, guild_queues
 from .youtube import YouTubeManager
 from .ui.controls import MusicControlView
 
-PROJECT_ROOT = os.getcwd()
-SETTING_PATH = f"{PROJECT_ROOT}/config"
+from discord_bot import config
 
 class YTMusic(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.current_song = None
         self.current_message = None
-        self.music_setting = None
-
-        music_config_path = os.path.join(SETTING_PATH, "music_config.json")
-        with open(music_config_path, "r", encoding="utf-8") as file:
-            self.music_setting = json.load(file)
+        self.music_setting = config.music_config
         
         self.youtube = YouTubeManager(time_limit=self.music_setting.get("time_limit", 1800))
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
