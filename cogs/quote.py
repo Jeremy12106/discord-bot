@@ -59,8 +59,8 @@ class Quote(commands.Cog):
 
         # 字體設定
         try:
-            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/ttf/TW-Kai-98_1.ttf", 28)
-            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/ttf/TW-Kai-98_1.ttf", 22)
+            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 28)
+            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 22)
         except IOError:
             font_text = ImageFont.load_default()
             font_author = ImageFont.load_default()
