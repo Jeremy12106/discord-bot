@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from loguru import logger
 
-weather_api_key = os.getenv('WEATHER_API_KEY')
+weather_api_key = os.getenv('WEATHER_API_KEY', None)
 
 class WeatherView(discord.ui.View):
     def __init__(self, bot, data, location, interaction, llm):
@@ -107,4 +107,7 @@ class Weather(commands.Cog):
             await interaction.followup.send(error_message)
 
 async def setup(bot):
+    if not weather_api_key:
+        logger.info("Weather API key 未設定，不啟用 `/weather` 功能")
+        return
     await bot.add_cog(Weather(bot))
