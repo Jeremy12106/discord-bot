@@ -1,6 +1,5 @@
 import os
 import io
-import textwrap
 import requests
 import discord
 from discord.ext import commands
@@ -44,12 +43,8 @@ class Quote(commands.Cog):
         response = requests.get(url, stream=True)
         avatar = Image.open(io.BytesIO(response.content)).convert("RGBA")
 
-        # 縮放並裁切為圓形
+        # 縮放
         avatar = avatar.resize((300, 300), Image.LANCZOS)
-        # mask = Image.new("L", (100, 100), 0)
-        # draw = ImageDraw.Draw(mask)
-        # draw.ellipse((0, 0, 100, 100), fill=255)
-        # avatar.putalpha(mask)
 
         # 黑白模式
         avatar = ImageOps.grayscale(avatar).convert("RGBA") if mode != "彩色" else avatar
@@ -64,8 +59,8 @@ class Quote(commands.Cog):
 
         # 字體設定
         try:
-            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 28)
-            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 22)
+            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/ttf/TW-Kai-98_1.ttf", 28)
+            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/ttf/TW-Kai-98_1.ttf", 22)
         except IOError:
             font_text = ImageFont.load_default()
             font_author = ImageFont.load_default()
@@ -85,18 +80,45 @@ class Quote(commands.Cog):
         draw.polygon(parallelogram, fill="black")
 
         # 計算文字區域並繪製文字 (換行處理)
-        text_width = width - left_width - 40  # 右側留出邊距
-        wrapped_text = textwrap.fill(text, width=20)  # 減少每行字數以適應新寬度
+        text_width = width - left_width - 20  # 右側留出邊距
+
+        # 智能文字換行
+        def get_wrapped_text(text, font, max_width):
+            lines = []
+            current_line = []
+            words = list(text)  # 對中文來說，每個字都是一個單位
+            
+            current_width = 0
+            for word in words:
+                # 獲取這個字的寬度
+                word_width = font.getbbox(word)[2]
+                
+                # 如果加上這個字會超出寬度，就換行
+                if current_width + word_width > max_width:
+                    lines.append(''.join(current_line))
+                    current_line = [word]
+                    current_width = word_width
+                else:
+                    current_line.append(word)
+                    current_width += word_width
+            
+            # 添加最後一行
+            if current_line:
+                lines.append(''.join(current_line))
+            
+            return '\n'.join(lines)
+
+        wrapped_text = get_wrapped_text(text, font_text, text_width)
         
         # 獲取文字大小以便垂直置中
         text_bbox = draw.multiline_textbbox((0, 0), wrapped_text, font=font_text)
         text_height = text_bbox[3] - text_bbox[1]
         
-        text_x = left_width + 20  # 右側文字起始位置
+        text_x = left_width - 10  # 右側文字起始位置
         text_y = (height - text_height - 40) // 2  # 垂直置中（保留作者名稱的空間）
         
         # 繪製文字（白色）
-        draw.text((text_x, text_y), wrapped_text, font=font_text, fill=(255, 255, 255))
+        draw.multiline_text((text_x, text_y), wrapped_text, font=font_text, fill=(255, 255, 255), align="left")
 
         # 繪製發送者名稱（白色，靠右對齊）
         author_text = f"- {author}"
