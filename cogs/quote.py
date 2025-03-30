@@ -1,4 +1,5 @@
 import os
+import re
 import io
 import requests
 import discord
@@ -108,6 +109,7 @@ class Quote(commands.Cog):
             
             return '\n'.join(lines)
 
+        text = re.sub(r"<.*?>", "", text)
         wrapped_text = get_wrapped_text(text, font_text, text_width)
         
         # 獲取文字大小以便垂直置中
