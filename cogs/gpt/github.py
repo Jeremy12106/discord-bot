@@ -7,7 +7,7 @@ from azure.core.credentials import AzureKeyCredential
 class GithubAPI():
     def __init__(self, model):
         self.model = model
-        self.api_key = os.getenv('GITHUB_API_KEY')
+        self.api_key = os.getenv('GITHUB_API_KEY', None)
 
     def get_response(self, prompt, temperature):
         client = ChatCompletionsClient(
