@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 PROJECT_ROOT = os.getcwd()
 
-class Quote(commands.Cog):
+class MakeItAQuote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -133,4 +133,4 @@ class Quote(commands.Cog):
         return img
 
 async def setup(bot):
-    await bot.add_cog(Quote(bot))
+    await bot.add_cog(MakeItAQuote(bot))
