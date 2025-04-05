@@ -8,5 +8,5 @@ pytubefix==8.12.1
 pynacl==1.5.0
 requests==2.32.3
 youtube-search==2.1.2
-yt-dlp==2025.2.19
+yt-dlp==2025.3.31
 google-api-python-client==2.154.0
