@@ -5,12 +5,14 @@ import requests
 import discord
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont, ImageOps
+from loguru import logger
 
 PROJECT_ROOT = os.getcwd()
 
 class MakeItAQuote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @commands.command(name="名言")
     async def make_quote(self, ctx, mode: str = "黑白"):
