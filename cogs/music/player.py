@@ -187,7 +187,7 @@ class YTMusic(commands.Cog):
 
             # 設置 10 分鐘計時器
             async def disconnect_after_timeout():
-                await asyncio.sleep(600)  # 10 minutes
+                await asyncio.sleep(300)  # 5 minutes
                 if voice_client and voice_client.is_connected():
                     await voice_client.disconnect()
                     embed = discord.Embed(title=f"⏰ | 沒有人點音樂，我先去睡了！", color=discord.Color.orange())
