@@ -1,8 +1,8 @@
 import os
 import yt_dlp
-from loguru import logger
 from pytubefix import YouTube
 from youtube_search import YoutubeSearch
+from loguru import logger
 
 class YouTubeManager:
     def __init__(self, time_limit=1800):  # 30分鐘限制
@@ -70,4 +70,57 @@ class YouTubeManager:
         except:
             logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 獲取音訊串流URL失敗")
             return None    
-        
+
+
+    # async def download_audio(self, url, folder, interaction):
+    #     """下載YouTube影片的音訊"""
+    #     file_path = os.path.join(folder, '%(id)s.%(ext)s')
+    #     ydl_opts = {
+    #         'format': 'bestaudio/best',
+    #         'outtmpl': file_path,
+    #         'noplaylist': True,
+    #         'quiet': False,
+    #         'geo_bypass': False,
+    #         'extractaudio': True,
+    #         'postprocessors': [{
+    #             'key': 'FFmpegExtractAudio',
+    #             'preferredcodec': 'mp3',
+    #             'preferredquality': '192',
+    #         }],
+    #         'concurrent_fragment_downloads': 3,
+    #     }
+    #     try:
+    #         # 取得影片資訊
+    #         with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+    #             video_info = ydl.extract_info(url, download=False)
+            
+    #         # 檢查時長限制
+    #         video_duration = video_info['duration']
+    #         if video_duration > self.time_limit:
+    #             logger.info(f"[音樂] 伺服器 ID: {interaction.guild.id}, 影片時間過長！")
+    #             return None, "影片時間過長！超過 30 分鐘"
+
+    #         # 避免重複下載
+    #         file_path = os.path.join(folder, f"{video_info['id']}.mp3")
+    #         if not os.path.exists(file_path):
+    #             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    #                 ydl.download([url])
+
+    #         # 返回影片資訊
+    #         video_info = {
+    #             "file_path": file_path,
+    #             "title": video_info['title'],
+    #             "url": url,
+    #             "duration": video_info['duration'],
+    #             "video_id": video_info['id'],
+    #             "author": video_info['uploader'],
+    #             "views": video_info['view_count'],
+    #             "requester": interaction.user,
+    #             "user_avatar": interaction.user.avatar.url
+    #         }
+            
+    #         return video_info, None
+
+    #     except Exception as e:
+    #         logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
+    #         return None, "下載失敗"
