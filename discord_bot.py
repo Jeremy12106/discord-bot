@@ -23,6 +23,7 @@ logger.add(log_path, level = level, format="{time} | {level} | {message}", rotat
 # 機器初始化設定
 intents = discord.Intents.default()
 intents.messages = True
+intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix=config.bot_config['prefix'], help_command=None, intents=intents)
 
