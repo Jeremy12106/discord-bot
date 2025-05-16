@@ -2,6 +2,7 @@ import os
 import asyncio
 import json
 import discord
+from typing import Optional
 from discord.ext import commands
 from discord import app_commands, FFmpegPCMAudio
 from loguru import logger
@@ -23,8 +24,8 @@ class YTMusic(commands.Cog):
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="play", description="播放音樂")
-    @app_commands.describe(song="輸入網址或關鍵字")
-    async def play(self, interaction: discord.Interaction, song: str = ""):
+    @app_commands.describe(song="輸入網址或關鍵字", stream="啟動即時串流 (預設為否)")
+    async def play(self, interaction: discord.Interaction, song: str="", stream: Optional[bool]=False):
         # 檢查使用者是否已在語音頻道
         if interaction.user.voice:
             channel = interaction.user.voice.channel
@@ -52,7 +53,7 @@ class YTMusic(commands.Cog):
         # 檢查是否為 URL 或使用關鍵字播放
         if "youtube.com" in song or "youtu.be" in song:
             await interaction.response.defer()
-            is_valid = await self.add_to_queue(interaction, song, is_deferred=True)
+            is_valid = await self.add_to_queue(interaction, song, is_deferred=True, stream=stream)
             if not is_valid:
                 return
         else:
@@ -83,12 +84,16 @@ class YTMusic(commands.Cog):
                 print(f"[音樂] 伺服器 ID： {interaction.guild.id}, Autocomplete 發生錯誤: {e}")
         return []
 
-    async def add_to_queue(self, interaction, url, is_deferred=False):
+    async def add_to_queue(self, interaction, url, is_deferred=False, stream=False):
         guild_id = interaction.guild.id
         queue, folder = get_guild_queue_and_folder(guild_id)
-
-        # 下載並獲取影片資訊
-        video_info, error = await self.youtube.download_audio(url, folder, interaction)
+        
+        if stream:
+            # 獲取影片資訊
+            video_info, error = await self.youtube.extract_audio(url, interaction)
+        else:
+            # 下載並獲取影片資訊
+            video_info, error = await self.youtube.download_audio(url, folder, interaction)
         
         if error:
             embed = discord.Embed(title=f"❌ | {error}", color=discord.Color.red())

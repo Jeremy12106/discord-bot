@@ -17,6 +17,33 @@ class YouTubeManager:
             logger.error(f"[音樂] YouTube搜尋失敗: {e}")
             return []
 
+    async def extract_audio(self, url, interaction):
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'quiet': True,
+            'extract_flat': False
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+
+            video_info = {
+                "file_path": info['url'],
+                "title": info['title'],
+                "url": url,
+                "duration": info['duration'],
+                "video_id": info['id'],
+                "author": info['uploader'],
+                "views": info['view_count'],
+                "requester": interaction.user,
+                "user_avatar": interaction.user.avatar.url
+            }
+
+            return video_info, None
+        except Exception as e:
+            logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
+            return None, "下載失敗"
+
     async def download_audio(self, url, folder, interaction):
         """下載YouTube影片的音訊"""
         try:
