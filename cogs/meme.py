@@ -36,5 +36,5 @@ class MyGo(commands.Cog):
         matches = [name for name in image_names if current.lower() in name.lower()]
         return [app_commands.Choice(name=match, value=match) for match in matches[:25]] # 不能超過25
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(MyGo(bot))

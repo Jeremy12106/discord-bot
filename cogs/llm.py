@@ -121,7 +121,7 @@ class LLMService(commands.Cog):
         return response
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: commands.Context, error):
         """當命令未定義時，觸發LLM事件"""
         if isinstance(error, commands.CommandNotFound):
             user_input = ctx.message.content[len(ctx.prefix):].strip()
@@ -149,5 +149,5 @@ class LLMService(commands.Cog):
         else:
             raise error
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(LLMService(bot))

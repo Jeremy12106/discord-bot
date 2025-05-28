@@ -6,10 +6,12 @@ from discord import app_commands
 from discord.ext import commands
 from loguru import logger
 
+from cogs.llm import LLMService
+
 weather_api_key = os.getenv('WEATHER_API_KEY', None)
 
 class WeatherView(discord.ui.View):
-    def __init__(self, bot, data, location, interaction, llm):
+    def __init__(self, bot: commands.Bot, data, location, interaction: discord.Interaction, llm: LLMService):
         super().__init__(timeout=60)
         self.bot = bot
         self.data = data
@@ -65,7 +67,7 @@ class WeatherView(discord.ui.View):
             await interaction.response.defer()
 
 class Weather(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.llm = bot.get_cog('LLMService')
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
@@ -106,7 +108,7 @@ class Weather(commands.Cog):
             logger.error(f"[Weather] 伺服器 ID: {interaction.guild_id}, 使用者名稱: {interaction.user.name}, bot 輸出: {error_message}")
             await interaction.followup.send(error_message)
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     if not weather_api_key:
         logger.info("Weather API key 未設定，不啟用 `/weather` 功能")
         return

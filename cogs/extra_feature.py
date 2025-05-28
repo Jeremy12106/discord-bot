@@ -139,7 +139,7 @@ class UltimateNumberGame(commands.Cog):
             self.game_active = False
 
 class SeaTurtleGame(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.llm = bot.get_cog('LLMService')
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
@@ -182,7 +182,7 @@ class SeaTurtleGame(commands.Cog):
             await interaction.followup.send(f"發生錯誤")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Feature(bot))
     await bot.add_cog(UltimateNumberGame(bot))
     await bot.add_cog(SeaTurtleGame(bot))

@@ -8,12 +8,13 @@ from loguru import logger
 
 from .common import extract_youtube_id
 from .youtube import YouTubeManager
+from .player import YTMusic
 from .ui.controls import RadioControlView
 
 from discord_bot import config
 
 class Radio(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.current_voice_client = None
         self.youtube = YouTubeManager()
@@ -45,7 +46,7 @@ class Radio(commands.Cog):
 
 
 class RadioSelectView(discord.ui.View):
-    def __init__(self, radio_cog, *, timeout=180):
+    def __init__(self, radio_cog: Radio, *, timeout=180):
         super().__init__(timeout=timeout)
         self.radio_cog = radio_cog
         self.music_setting = radio_cog.music_setting
@@ -78,7 +79,7 @@ class RadioSelectView(discord.ui.View):
             
             # Get stream URL and setup audio
             stream_url = await self.radio_cog.youtube.get_stream_audio(selected_station['url'], interaction)
-            voice_client = interaction.guild.voice_client
+            voice_client: discord.VoiceClient = interaction.guild.voice_client
             options = self.music_setting.get('options', '-ar 48000 -ac 2')
             before_options = self.music_setting.get('before_options', None)
             
@@ -144,7 +145,7 @@ class RadioSelectView(discord.ui.View):
 
             # Cancel any existing disconnect task from YTMusic cog  
             await asyncio.sleep(10)
-            yt_music_cog = self.radio_cog.bot.get_cog('YTMusic')
+            yt_music_cog: YTMusic = self.radio_cog.bot.get_cog('YTMusic')
             if yt_music_cog and hasattr(yt_music_cog, 'disconnect_task'):
                 yt_music_cog.disconnect_task.cancel()
                 delattr(yt_music_cog, 'disconnect_task')

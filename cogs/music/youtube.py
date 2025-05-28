@@ -1,5 +1,6 @@
 import os
 import yt_dlp
+import discord
 from pytubefix import YouTube
 from youtube_search import YoutubeSearch
 from loguru import logger
@@ -17,7 +18,7 @@ class YouTubeManager:
             logger.error(f"[音樂] YouTube搜尋失敗: {e}")
             return []
 
-    async def extract_audio(self, url, interaction):
+    async def extract_audio(self, url, interaction: discord.Interaction):
         ydl_opts = {
             'format': 'bestaudio/best',
             'quiet': True,
@@ -44,7 +45,7 @@ class YouTubeManager:
             logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
             return None, "下載失敗"
 
-    async def download_audio(self, url, folder, interaction):
+    async def download_audio(self, url, folder, interaction: discord.Interaction):
         """下載YouTube影片的音訊"""
         try:
             yt = YouTube(url)

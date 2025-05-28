@@ -25,7 +25,7 @@ class MRT:
         }
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
-    def load_stations(self):
+    def load_stations(self) -> dict:
         """載入捷運線對應的站資料"""
         stations_file = f"{self.data_path}/stations.json"
         with open(stations_file, 'r', encoding='utf-8') as f:
@@ -83,12 +83,5 @@ class MRTCog(commands.Cog):
         return [app_commands.Choice(name=station, value=station) for station in list(stations)[:25]]
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(MRTCog(bot))
-
-
-if __name__ == "__main__":
-    mrt = MRT()
-    a = mrt.recommend_ramen("中和")
-    print(a)
-    

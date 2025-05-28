@@ -2,19 +2,20 @@ import os
 import asyncio
 import json
 import discord
-from typing import Optional
+from typing import Optional, Dict, Any
 from discord.ext import commands
 from discord import app_commands, FFmpegPCMAudio
 from loguru import logger
 
 from .queue import get_guild_queue_and_folder, guild_queues
 from .youtube import YouTubeManager
+from .radio import Radio
 from .ui.controls import MusicControlView
 
 from discord_bot import config
 
 class YTMusic(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.current_song = None
         self.current_message = None
@@ -31,10 +32,10 @@ class YTMusic(commands.Cog):
             channel = interaction.user.voice.channel
             
             # 如果在播放收音機，先停止
-            voice_client = interaction.guild.voice_client
+            voice_client: discord.VoiceClient = interaction.guild.voice_client
             if voice_client and voice_client.is_playing():
                 # 檢查是否有Radio cog在播放
-                radio_cog = self.bot.get_cog('Radio')
+                radio_cog: Radio = self.bot.get_cog('Radio')
                 if radio_cog and radio_cog.current_song:
                     voice_client.stop()
                     radio_cog.current_song = None
@@ -84,7 +85,7 @@ class YTMusic(commands.Cog):
                 print(f"[音樂] 伺服器 ID： {interaction.guild.id}, Autocomplete 發生錯誤: {e}")
         return []
 
-    async def add_to_queue(self, interaction, url, is_deferred=False, stream=False):
+    async def add_to_queue(self, interaction: discord.Interaction, url, is_deferred=False, stream=False):
         guild_id = interaction.guild.id
         queue, folder = get_guild_queue_and_folder(guild_id)
         
@@ -114,11 +115,11 @@ class YTMusic(commands.Cog):
             await interaction.response.send_message(embed=embed)
         return True
 
-    async def play_next(self, interaction):
+    async def play_next(self, interaction: discord.Interaction):
         guild_id = interaction.guild.id
         queue, _ = get_guild_queue_and_folder(guild_id)
 
-        voice_client = interaction.guild.voice_client
+        voice_client: discord.VoiceClient = interaction.guild.voice_client
         if not voice_client or not voice_client.is_connected():
             return
         
@@ -201,7 +202,7 @@ class YTMusic(commands.Cog):
             
             self.disconnect_task = asyncio.create_task(disconnect_after_timeout())
 
-    async def handle_after_play(self, interaction, file_path):
+    async def handle_after_play(self, interaction: discord.Interaction, file_path):
         try:
             if os.path.exists(file_path):
                 await asyncio.sleep(1)
@@ -212,7 +213,7 @@ class YTMusic(commands.Cog):
         await self.play_next(interaction)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         # 偵測機器人離開語音頻道時，清理伺服器相關資料
         if member.bot and before.channel is not None and after.channel is None:
             guild_id = member.guild.id

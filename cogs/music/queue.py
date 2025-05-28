@@ -1,19 +1,18 @@
 import os
 import asyncio
-from loguru import logger
+from typing import Tuple
 
 # 定義每個伺服器的播放清單
 guild_queues = {}
 
-def get_guild_queue_and_folder(guild_id):
+def get_guild_queue_and_folder(guild_id) -> Tuple[asyncio.Queue, str]:
     """確保伺服器有獨立的資料夾和播放清單"""
     if guild_id not in guild_queues:
         guild_queues[guild_id] = asyncio.Queue()
 
     # 為每個伺服器設定獨立的下載資料夾
     guild_folder = f"./assets/music_temp/{guild_id}"
-    if not os.path.exists(guild_folder):
-        os.makedirs(guild_folder)
+    os.makedirs(guild_folder, exist_ok=True)
     return guild_queues[guild_id], guild_folder
 
 def clear_guild_queue(guild_id):

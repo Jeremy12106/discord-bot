@@ -8,7 +8,7 @@ class ConfigManager:
         self.bot_config = self.load_config("bot_config.json")
         self.music_config = self.load_config("music_config.json")
 
-    def load_config(self, filename):
+    def load_config(self, filename) -> dict:
         config_path = os.path.join(self.config_dir, filename)
         try:
             with open(config_path, "r", encoding="utf-8") as f:

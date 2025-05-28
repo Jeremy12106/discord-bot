@@ -15,7 +15,7 @@ class MakeItAQuote(commands.Cog):
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @commands.command(name="名言")
-    async def make_quote(self, ctx, mode: str = "黑白"):
+    async def make_quote(self, ctx: commands.Context, mode: str = "黑白"):
         """製作帶有頭像的名言圖片，支援黑白/彩色模式"""
         async with ctx.typing():
             if not ctx.message.reference:
@@ -54,7 +54,7 @@ class MakeItAQuote(commands.Cog):
 
         return avatar
 
-    def create_quote_image(self, text, author, avatar):
+    def create_quote_image(self, text, author, avatar: Image.Image):
         """生成帶有頭像的名言圖片"""
         # 設定圖片大小
         width, height = 600, 300
@@ -86,7 +86,7 @@ class MakeItAQuote(commands.Cog):
         text_width = width - left_width - 20  # 右側留出邊距
 
         # 智能文字換行
-        def get_wrapped_text(text, font, max_width):
+        def get_wrapped_text(text, font: ImageFont.FreeTypeFont, max_width: int) -> str:
             lines = []
             current_line = []
             words = list(text)  # 對中文來說，每個字都是一個單位
@@ -134,5 +134,5 @@ class MakeItAQuote(commands.Cog):
 
         return img
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(MakeItAQuote(bot))

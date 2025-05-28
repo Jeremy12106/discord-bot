@@ -1,23 +1,25 @@
 import os
 import json
-import discord
 import asyncio
+import discord
+from typing import Optional
 from loguru import logger
 
 from ..queue import guild_queues
+from ..player import YTMusic
 
 PROJECT_ROOT = os.getcwd()
 SETTING_PATH=f"{PROJECT_ROOT}/config"
 
 class MusicControlView(discord.ui.View):
-    def __init__(self, interaction: discord.Interaction, cog):
+    def __init__(self, interaction: discord.Interaction, cog: YTMusic):
         super().__init__(timeout=None)
         self.guild = interaction.guild
         self.cog = cog
         self.current_position = 0
-        self.message = None
-        self.update_task = None
-        self.current_embed = None
+        self.message: Optional[discord.Message] = None
+        self.update_task: Optional[asyncio.Task] = None
+        self.current_embed: Optional[discord.Embed] = None
 
         music_config_path = os.path.join(SETTING_PATH, "music_config.json")
         with open(music_config_path, "r", encoding="utf-8") as file:
@@ -33,7 +35,8 @@ class MusicControlView(discord.ui.View):
     async def update_progress(self, duration):
         try:
             while True:
-                if not self.guild.voice_client or not self.guild.voice_client.is_playing():
+                voice_client: discord.VoiceClient = self.guild.voice_client
+                if not self.guild.voice_client or not voice_client.is_playing():
                     break
                 
                 self.current_position += 1
@@ -57,7 +60,7 @@ class MusicControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:pause:1315853280852574239>', label=" 暫停", style=discord.ButtonStyle.gray)
     async def pause(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             if voice_client.is_playing():
                 voice_client.pause()
@@ -72,7 +75,7 @@ class MusicControlView(discord.ui.View):
     
     @discord.ui.button(emoji='<:play:1315853281519468644>', label=" 播放", style=discord.ButtonStyle.gray)
     async def resume(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             if voice_client.is_playing():
                 await interaction.response.send_message("❌ 正在播放音樂！", ephemeral=True)
@@ -91,7 +94,7 @@ class MusicControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:skip:1315853298770776134>', label=" 下一首歌", style=discord.ButtonStyle.gray)
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             voice_client.stop()
             await self.update_embed(interaction, f"⏭️ | {interaction.user.name} 跳過了音樂")
@@ -101,10 +104,10 @@ class MusicControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:stop:1321510975123488800>', label=" 停止", style=discord.ButtonStyle.gray)
     async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             # 清空播放隊列
-            queue = guild_queues.get(self.guild.id)
+            queue: asyncio.Queue = guild_queues.get(self.guild.id)
             if queue:
                 while not queue.empty():
                     await queue.get()
@@ -118,7 +121,7 @@ class MusicControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:playlist:1321510957956206613>', label=" 更新播放清單", style=discord.ButtonStyle.gray)
     async def show_queue(self, interaction: discord.Interaction, button: discord.ui.Button):
-        queue = guild_queues.get(self.guild.id)
+        queue: asyncio.Queue = guild_queues.get(self.guild.id)
         if not queue or queue.empty():
             await interaction.response.send_message("目前沒有歌曲在播放清單中", ephemeral=True)
             return
@@ -149,9 +152,9 @@ class RadioControlView(discord.ui.View):
         self.guild = interaction.guild
         self.cog = cog
         self.current_position = 0
-        self.message = None
-        self.update_task = None
-        self.current_embed = None
+        self.message: Optional[discord.Message] = None
+        self.update_task: Optional[asyncio.Task] = None
+        self.current_embed: Optional[discord.Embed] = None
 
         music_config_path = os.path.join(SETTING_PATH, "music_config.json")
         with open(music_config_path, "r", encoding="utf-8") as file:
@@ -165,7 +168,7 @@ class RadioControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:pause:1315853280852574239>', label=" 暫停", style=discord.ButtonStyle.gray)
     async def pause(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             if voice_client.is_playing():
                 voice_client.pause()
@@ -180,7 +183,7 @@ class RadioControlView(discord.ui.View):
     
     @discord.ui.button(emoji='<:play:1315853281519468644>', label=" 播放", style=discord.ButtonStyle.gray)
     async def resume(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             if voice_client.is_playing():
                 await interaction.response.send_message("❌ 正在播放音樂！", ephemeral=True)
@@ -193,10 +196,10 @@ class RadioControlView(discord.ui.View):
 
     @discord.ui.button(emoji='<:stop:1321510975123488800>', label=" 停止", style=discord.ButtonStyle.gray)
     async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
-        voice_client = self.guild.voice_client
+        voice_client: discord.VoiceClient = self.guild.voice_client
         if voice_client:
             # 清空播放隊列
-            queue = guild_queues.get(self.guild.id)
+            queue: asyncio.Queue = guild_queues.get(self.guild.id)
             if queue:
                 while not queue.empty():
                     await queue.get()
