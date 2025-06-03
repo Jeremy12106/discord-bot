@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from loguru import logger
 
-from config.config import ConfigManager
+from utils.config import ConfigManager
 
 # 載入設定檔
 config = ConfigManager()

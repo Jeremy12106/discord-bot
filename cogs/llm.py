@@ -4,8 +4,8 @@ import json
 from loguru import logger
 from discord.ext import commands
 
-from .gpt.gemini_api import GeminiAPI
-from .gpt.github import GithubAPI
+from ..service.gemini import GeminiAPI
+from ..service.github import GithubAPI
 from .gpt.search import google_search
 from .gpt.prompt import get_prompt
 from .gpt.memory import get_memory, save_memory
