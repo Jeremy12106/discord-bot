@@ -1,0 +1,21 @@
+music:
+  # 是否顯示播放進度條
+  display_progress_bar: true
+  # YT 搜尋顯示數量
+  search_count: 10
+  # 音樂播放長度限制 (秒)
+  time_limit: 1800
+  # 音樂品質設定
+  before_options: null
+  options: "-ar 48000 -ac 2"
+
+radio_stations:
+  - name: "讀書電台"                            # 電台名稱
+    url: "https://example.com/radio/reading"   # 電台網址
+    description: "By Lofi Girl"                # 電台描述，選填
+    emoji: "📚"                                # 表情符號，選填
+  
+  - name: 
+    url: 
+    description: 
+    emoji: 

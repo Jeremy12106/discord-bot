@@ -6,6 +6,8 @@ assets/data/memory
 assets/data/personality
 config/bot_config.json
 config/music_config.json
+config/bot_config.yml
+config/music_config.yml
 test
 log
 notes.md
