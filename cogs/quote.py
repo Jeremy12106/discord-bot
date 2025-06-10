@@ -7,7 +7,8 @@ from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from loguru import logger
 
-PROJECT_ROOT = os.getcwd()
+from utils.path_manager import FONT
+FONT_FILE = "TW-Kai-98_1.ttf"
 
 class MakeItAQuote(commands.Cog):
     def __init__(self, bot):
@@ -62,8 +63,8 @@ class MakeItAQuote(commands.Cog):
 
         # 字體設定
         try:
-            font_text = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 28)
-            font_author = ImageFont.truetype(f"{PROJECT_ROOT}/assets/font/TW-Kai-98_1.ttf", 22)
+            font_text = ImageFont.truetype(FONT/FONT_FILE, 28)
+            font_author = ImageFont.truetype(FONT/FONT_FILE, 22)
         except IOError:
             font_text = ImageFont.load_default()
             font_author = ImageFont.load_default()
