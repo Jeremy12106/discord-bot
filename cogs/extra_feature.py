@@ -1,5 +1,3 @@
-import os
-import json
 import random
 import discord
 from loguru import logger
@@ -7,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from discord_bot import config
+from utils.file_manager import FileManager
 from utils.path_manager import PERSONALITY_DIR
 from .llm import LLMService
 
@@ -55,27 +54,30 @@ class Feature(commands.Cog):
         """
         設定頻道專屬的豆白個性。
         """
+        filename = f"{interaction.channel.id}.json"
         data = {"personality": personality}
-        file_path = os.path.join(PERSONALITY_DIR, f"{interaction.channel.id}.json")
-        with open(file_path, "w", encoding="utf-8-sig") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        
+        FileManager.save_json_data(PERSONALITY_DIR, filename, data)
 
-        logger.info(f"[個性] 伺服器 ID: {interaction.guild.id}, 頻道 ID: {interaction.channel.id},  使用者名稱: {interaction.user.name}, 設定個性: {personality}")
+        logger.info(f"[個性] 伺服器 ID: {interaction.guild.id}, 頻道 ID: {interaction.channel.id}, 使用者名稱: {interaction.user.name}, 設定個性: {personality}")
         embed = discord.Embed(title="🐶 | 個性設定成功！", description=f"> 新個性：{personality}", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
-    
+
+
     @app_commands.command(name="check_personality", description="查看頻道專屬的豆白個性")
     async def check_personality(self, interaction: discord.Interaction):
         """
         查看頻道專屬的豆白個性。
         """
-        file_path = os.path.join(PERSONALITY_DIR, f"{interaction.channel.id}.json")
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8-sig") as f:
-                data = json.load(f)
-            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> {data['personality']}", color=discord.Color.blue())
+        filename = f"{interaction.channel.id}.json"
+        data = FileManager.load_json_data(PERSONALITY_DIR, filename)
+
+        if data and "personality" in data:
+            description = f"> {data['personality']}"
         else:
-            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> 使用預設個性: {self.personality}", color=discord.Color.blue())
+            description = f"> 使用預設個性: {self.personality}"
+
+        embed = discord.Embed(title="🐶 | 頻道專屬個性", description=description, color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
 
     @commands.command(name="燒魚")

@@ -4,6 +4,7 @@ assets/font
 assets/music_temp
 assets/data/memory
 assets/data/personality
+assets/data/debt_log
 config/bot_config.json
 config/music_config.json
 config/bot_config.yml

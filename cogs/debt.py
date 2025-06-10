@@ -1,6 +1,4 @@
-import json
 import discord
-from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 from discord import app_commands
@@ -8,34 +6,23 @@ from discord.ext import commands
 from loguru import logger
 
 from utils.path_manager import DEBT_DIR
+from utils.file_manager import FileManager
 
 # 債務功能主 Cog
 class DebtCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.data_path = DEBT_DIR
-        self.data_path.mkdir(parents=True, exist_ok=True)
         self.bot.tree.add_command(DebtGroup(self))
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
-    def _get_server_file(self, server_id: int) -> Path:
-        return self.data_path / f"{server_id}.json"
+    def _get_filename(self, server_id: int) -> str:
+        return f"{server_id}.json"
 
     def _load_data(self, server_id: int) -> Dict:
-        file_path = self._get_server_file(server_id)
-        if file_path.exists():
-            try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
-                logger.error(f"[債] {file_path} JSON 載入失敗")
-                return {}
-        return {}
+        return FileManager.load_json_data(DEBT_DIR, self._get_filename(server_id))
 
     def _save_data(self, server_id: int, data: Dict):
-        file_path = self._get_server_file(server_id)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        FileManager.save_json_data(DEBT_DIR, self._get_filename(server_id), data)
 
 
 # 指令群組：/debt add, /debt list, ...
