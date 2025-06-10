@@ -4,30 +4,29 @@ import json
 from loguru import logger
 from discord.ext import commands
 
-from ..service.gemini_api import GeminiAPI
-from ..service.github_api import GithubAPI
+from service.gemini_api import GeminiAPI
+from service.github_api import GithubAPI
 from .gpt.search import google_search
 from .gpt.prompt import get_prompt
 from .gpt.memory import get_memory, save_memory
 
 from discord_bot import config
-
-PROJECT_ROOT = os.getcwd()
-PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
-os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
+from utils.env_loader import GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_ENGINE_ID, GEMINI_API_KEY, GITHUB_API_KEY
+from utils.path_manager import PERSONALITY_DIR
 
 class LLMService(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.system_prompt = config.bot_config.get("system_prompt", None)
-        self.personality = config.bot_config.get("personality", None)
-        self.gpt_api = config.bot_config.get("gpt_api", None)
-        self.model = config.bot_config.get("model", None)
-        self.chat_memory = config.bot_config.get("chat_memory", False)
+        self.system_prompt = config.llm.system_prompt
+        self.personality = config.llm.personality
+        self.gpt_api = config.llm.gpt_api
+        self.model = config.llm.model
+        self.chat_memory = config.llm.chat_memory
         
-        has_search_keys = bool(os.getenv("GOOGLE_SEARCH_API_KEY") and os.getenv("GOOGLE_SEARCH_ENGINE_ID"))
-        self.use_search_engine = has_search_keys and config.bot_config.get("use_search_engine", False)
+        self.use_search_engine = (
+            config.llm.use_search_engine and GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID
+        )
         
         if self.gpt_api == "github":
             self.gpt = GithubAPI(self.model)
@@ -38,10 +37,10 @@ class LLMService(commands.Cog):
     def get_response(self, chanel_id, user_nick, text, search_results=None, memory=None):
         """豆白的回應"""
         # 檢查是否有頻道專屬的個性
-        file_path = os.path.join(PERSONALITY_FOLDER, f"{chanel_id}.json")
+        file_path = os.path.join(PERSONALITY_DIR, f"{chanel_id}.json")
         if os.path.exists(file_path):
             with open(file_path, "r", encoding="utf-8-sig") as file:
-                data = json.load(file)
+                data: dict = json.load(file)
                 personality = data.get("personality", None)
             prompt = get_prompt(self.system_prompt, user_nick, text, personality, search_results, memory)
         else:
@@ -150,4 +149,10 @@ class LLMService(commands.Cog):
             raise error
 
 async def setup(bot: commands.Bot):
+    if not GEMINI_API_KEY and not GITHUB_API_KEY:
+        logger.info("LLM API key 未設定，不啟用 `@對話` 功能")
+        return
+    if config.llm.gpt_api not in ["gemini", "github"]:
+        logger.info(f"無效的 API 名稱：{config.llm.gpt_api}，請檢查 `config/bot_config` 設定檔中的 `gpt_api` 參數，或參考說明文件。")
+        return
     await bot.add_cog(LLMService(bot))

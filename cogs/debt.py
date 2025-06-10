@@ -1,19 +1,19 @@
+import json
 import discord
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Optional
 from discord import app_commands
 from discord.ext import commands
-from datetime import datetime
-import json
-import os
 from loguru import logger
-from pathlib import Path
-from typing import Dict, List, Optional
 
+from utils.path_manager import DEBT_DIR
 
 # 債務功能主 Cog
 class DebtCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.data_path = Path("assets/data/debt_log")
+        self.data_path = DEBT_DIR
         self.data_path.mkdir(parents=True, exist_ok=True)
         self.bot.tree.add_command(DebtGroup(self))
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")

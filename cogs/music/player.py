@@ -2,26 +2,28 @@ import os
 import asyncio
 import json
 import discord
-from typing import Optional, Dict, Any
 from discord.ext import commands
 from discord import app_commands, FFmpegPCMAudio
+from typing import Optional, Dict, Any, TYPE_CHECKING
 from loguru import logger
 
 from .queue import get_guild_queue_and_folder, guild_queues
 from .youtube import YouTubeManager
-from .radio import Radio
 from .ui.controls import MusicControlView
-
+from utils.models import VideoInfo
 from discord_bot import config
+
+if TYPE_CHECKING:
+    from .radio import Radio
 
 class YTMusic(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.current_song = None
         self.current_message = None
-        self.music_setting = config.music_config
+        self.music_setting = config.music
         
-        self.youtube = YouTubeManager(time_limit=self.music_setting.get("time_limit", 1800))
+        self.youtube = YouTubeManager(time_limit=self.music_setting.time_limit)
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="play", description="播放音樂")
@@ -70,7 +72,7 @@ class YTMusic(commands.Cog):
     @play.autocomplete("song")
     async def song_autocomplete(self, interaction: discord.Interaction, current: str):
         # 搜尋前十項
-        max_results = self.music_setting.get('search_count',10)
+        max_results = self.music_setting.search_count
         results = await self.youtube.search_videos(current, max_results=max_results)
         if results:
             try:
@@ -107,8 +109,8 @@ class YTMusic(commands.Cog):
         # 將檔案資訊加入佇列
         await queue.put(video_info)
 
-        logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 成功將 {video_info['title']} 添加到播放清單")
-        embed = discord.Embed(title=f"✅ | 已添加到播放清單： {video_info['title']}", color=discord.Color.blue())
+        logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 使用者名稱： {interaction.user.name}, 成功將 {video_info.title} 添加到播放清單")
+        embed = discord.Embed(title=f"✅ | 已添加到播放清單： {video_info.title}", color=discord.Color.blue())
         if is_deferred:
             await interaction.followup.send(embed=embed)
         else:
@@ -129,15 +131,15 @@ class YTMusic(commands.Cog):
             delattr(self, 'disconnect_task')
 
         if queue and not queue.empty():
-            song = await queue.get()
-            file_path = song["file_path"]
+            song: VideoInfo = await queue.get()
+            file_path = song.file_path
             try:
                 # 保存當前播放的歌曲信息
                 self.current_song = song
                 
                 # 開始播放
-                FFMPEG_OPTIONS = {'before_options': self.music_setting.get("before_options", None),
-                                   'options': self.music_setting.get("options", None)}
+                FFMPEG_OPTIONS = {'before_options': self.music_setting.before_options,
+                                   'options': self.music_setting.options}
                 voice_client.play(
                     FFmpegPCMAudio(file_path, **FFMPEG_OPTIONS),
                     after=lambda e: self.bot.loop.create_task(self.handle_after_play(interaction, file_path))
@@ -146,21 +148,21 @@ class YTMusic(commands.Cog):
                 # 創建或更新 embed
                 embed = discord.Embed(
                     title="🎵 | 正在播放音樂",
-                    description=f"**[{song['title']}]({song['url']})**",
+                    description=f"**[{song.title}]({song.url})**",
                     color=discord.Color.blue()
                 )
                 
-                minutes, seconds = divmod(song['duration'], 60)
-                embed.add_field(name="上傳頻道", value=f"> {song['author']}", inline=True)
+                minutes, seconds = divmod(song.duration, 60)
+                embed.add_field(name="上傳頻道", value=f"> {song.author}", inline=True)
                 embed.add_field(name="播放時長", value=f"> {minutes:02d}:{seconds:02d}", inline=True)
-                embed.add_field(name="觀看次數", value=f"> {int(song['views']):,}", inline=True)
-                if self.music_setting.get("display_progress_bar", None):
+                embed.add_field(name="觀看次數", value=f"> {int(song.views):,}", inline=True)
+                if self.music_setting.display_progress_bar:
                     embed.add_field(name="播放進度", value=f"> 00:00 ▱▱▱▱▱▱▱▱▱▱ {minutes:02d}:{seconds:02d}", inline=False)
                 embed.add_field(name="播放清單", value="> 清單為空", inline=False)
                 
-                thumbnail = self.youtube.get_thumbnail_url(song['video_id'])
+                thumbnail = self.youtube.get_thumbnail_url(song.video_id)
                 embed.set_thumbnail(url=thumbnail)
-                embed.set_footer(text=song['requester'], icon_url=song['user_avatar'])
+                embed.set_footer(text=song.requester, icon_url=song.user_avatar)
                 
                 # 創建新的控制視圖並添加進度條選擇器
                 view = MusicControlView(interaction, self)
@@ -176,10 +178,10 @@ class YTMusic(commands.Cog):
                 view.current_position = 0
                 
                 # 開始更新進度
-                if self.music_setting.get("display_progress_bar", None):
+                if self.music_setting.display_progress_bar:
                     if view.update_task:
                         view.update_task.cancel()
-                    view.update_task = self.bot.loop.create_task(view.update_progress(song['duration']))
+                    view.update_task = self.bot.loop.create_task(view.update_progress(song.duration))
                 
             except Exception as e:
                 logger.error(f"[音樂] 伺服器 ID： {interaction.guild.id}, 播放音樂時出錯： {e}")

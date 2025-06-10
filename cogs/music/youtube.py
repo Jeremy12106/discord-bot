@@ -5,6 +5,8 @@ from pytubefix import YouTube
 from youtube_search import YoutubeSearch
 from loguru import logger
 
+from utils.models import VideoInfo
+
 class YouTubeManager:
     def __init__(self, time_limit=1800):  # 30分鐘限制
         self.time_limit = time_limit
@@ -27,18 +29,18 @@ class YouTubeManager:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-
-            video_info = {
-                "file_path": info['url'],
-                "title": info['title'],
-                "url": url,
-                "duration": info['duration'],
-                "video_id": info['id'],
-                "author": info['uploader'],
-                "views": info['view_count'],
-                "requester": interaction.user,
-                "user_avatar": interaction.user.avatar.url
-            }
+            
+            video_info = VideoInfo(
+                file_path=info['url'],
+                title=info['title'],
+                url=url,
+                duration=info['duration'],
+                video_id=info['id'],
+                author=info['uploader'],
+                views=info['view_count'],
+                requester=interaction.user,
+                user_avatar=interaction.user.avatar.url if interaction.user.avatar else None
+            )
 
             return video_info, None
         except Exception as e:
@@ -63,17 +65,17 @@ class YouTubeManager:
                 audio_stream.download(output_path=folder, filename=f"{yt.video_id}.mp4")
 
             # 返回影片資訊
-            video_info = {
-                "file_path": file_path,
-                "title": yt.title,
-                "url": url,
-                "duration": yt.length,
-                "video_id": yt.video_id,
-                "author": yt.author,
-                "views": yt.views,
-                "requester": interaction.user,
-                "user_avatar": interaction.user.avatar.url
-            }
+            video_info = VideoInfo(
+                file_path=file_path,
+                title=yt.title,
+                url=url,
+                duration=yt.length,
+                video_id=yt.video_id,
+                author=yt.author,
+                views=yt.views,
+                requester=interaction.user,
+                user_avatar=interaction.user.avatar.url if interaction.user.avatar else None
+            )
             
             return video_info, None
 
@@ -85,7 +87,7 @@ class YouTubeManager:
         """獲取影片縮圖URL"""
         return f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
     
-    async def get_stream_audio(self, url, interaction):
+    async def get_stream_audio(self, url, interaction: discord.Interaction):
         ydl_opts = {
             'format': 'bestaudio/best',
             'quiet': True,

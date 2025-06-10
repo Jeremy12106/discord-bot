@@ -7,8 +7,9 @@ from discord.ext import commands
 from loguru import logger
 
 from cogs.llm import LLMService
+from service.weather_api import get_weather
+from utils.env_loader import WEATHER_API_KEY
 
-weather_api_key = os.getenv('WEATHER_API_KEY', None)
 
 class WeatherView(discord.ui.View):
     def __init__(self, bot: commands.Bot, data, location, interaction: discord.Interaction, llm: LLMService):
@@ -48,7 +49,7 @@ class WeatherView(discord.ui.View):
         embed = discord.Embed(title="今日天氣預報", description=weather_message, color=discord.Color.blue())
         await self.interaction.edit_original_response(embed=embed, view=self)
 
-    @discord.ui.button(label="⬅ 上一個時段", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="🢀 上一個時段", style=discord.ButtonStyle.blurple)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_index == 0:
             await interaction.response.send_message("無上一個時段的資訊", ephemeral=True)
@@ -57,7 +58,7 @@ class WeatherView(discord.ui.View):
             await self.update_message()
             await interaction.response.defer()
 
-    @discord.ui.button(label="下一個時段 ➡", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="下一個時段 🢂", style=discord.ButtonStyle.blurple)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_index == 2:
             await interaction.response.send_message("無下一個時段的資訊", ephemeral=True)
@@ -84,17 +85,8 @@ class Weather(commands.Cog):
     ])
     async def get_weather(self, interaction: discord.Interaction, region: app_commands.Choice[str]):
         await interaction.response.defer()
-        # API 設定
-        url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001"
-        params = {
-            "Authorization": weather_api_key,
-            "locationName": region.value,
-        }
-
-        # 呼叫 API 並處理回應
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-            data = json.loads(response.text)
+        data = get_weather(region.value)
+        if data:
             try:
                 location = data["records"]["location"][0]["locationName"]  # 地點
                 view = WeatherView(self.bot, data, location, interaction, self.llm)
@@ -109,7 +101,7 @@ class Weather(commands.Cog):
             await interaction.followup.send(error_message)
 
 async def setup(bot: commands.Bot):
-    if not weather_api_key:
+    if not WEATHER_API_KEY:
         logger.info("Weather API key 未設定，不啟用 `/weather` 功能")
         return
     await bot.add_cog(Weather(bot))

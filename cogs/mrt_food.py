@@ -7,10 +7,10 @@ from loguru import logger
 from discord.ext import commands
 from discord import app_commands
 
-PROJECT_ROOT = os.getcwd()
+from utils.path_manager import MRT_DIR
 
 class MRT:
-    def __init__(self, data_path=f'{PROJECT_ROOT}/assets/data/mrt_food'):
+    def __init__(self, data_path=MRT_DIR):
         self.data_path = data_path
         self.stations = self.load_stations()
         self.ramen_shops = self.load_ramen_shops()
@@ -27,7 +27,7 @@ class MRT:
 
     def load_stations(self) -> dict:
         """載入捷運線對應的站資料"""
-        stations_file = f"{self.data_path}/stations.json"
+        stations_file = self.data_path / "stations.json"
         with open(stations_file, 'r', encoding='utf-8') as f:
             return json.load(f)
 
@@ -36,7 +36,7 @@ class MRT:
         ramen_shops = {}
         lines = ['red_line', 'blue_line', 'yellow_line', 'brown_line', 'green_line', 'orange_line']
         for line in lines:
-            ramen_file = f"{self.data_path}/{line}.json"
+            ramen_file = self.data_path / f"{line}.json"
             with open(ramen_file, 'r', encoding='utf-8') as f:
                 ramen_shops[line] = json.load(f)
         return ramen_shops

@@ -5,10 +5,12 @@ from loguru import logger
 from discord.ext import commands
 from discord import app_commands
 
+from utils.path_manager import MYGO_DIR
+
 class MyGo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.image_folder = 'assets/image/mygo'
+        self.image_folder = MYGO_DIR
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="mygo", description="畢竟是一輩子的事")

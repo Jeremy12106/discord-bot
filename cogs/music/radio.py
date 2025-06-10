@@ -12,6 +12,7 @@ from .player import YTMusic
 from .ui.controls import RadioControlView
 
 from discord_bot import config
+from utils.models import RadioStation
 
 class Radio(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -21,8 +22,8 @@ class Radio(commands.Cog):
         self.current_song = None
         self.current_message = None
         
-        self.music_setting = config.music_config
-        self.radio_stations = config.music_config.get("radio_station", None)
+        self.music_setting = config.music
+        self.radio_stations = config.radio_stations
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="lofi", description="播放Lofi音樂電台")
@@ -53,12 +54,12 @@ class RadioSelectView(discord.ui.View):
         
         # Create options list from config
         options = []
-        for station_name, station_info in radio_cog.radio_stations.items():
+        for radio_station in radio_cog.radio_stations:
             options.append(
                 discord.SelectOption(
-                    label=station_name,
-                    emoji=station_info['emoji'],
-                    description=f"By {station_info['description']}"
+                    label=radio_station.name,
+                    emoji=radio_station.emoji,
+                    description=f"By {radio_station.description}"
                 )
             )
         
@@ -75,13 +76,13 @@ class RadioSelectView(discord.ui.View):
     async def select_callback(self, interaction: discord.Interaction):
         try:
             await interaction.response.defer(ephemeral=False)
-            selected_station = self.radio_cog.radio_stations[self.select.values[0]]
+            selected_station: RadioStation = self.radio_cog.radio_stations[self.select.values[0]]
             
             # Get stream URL and setup audio
-            stream_url = await self.radio_cog.youtube.get_stream_audio(selected_station['url'], interaction)
+            stream_url = await self.radio_cog.youtube.get_stream_audio(selected_station.url, interaction)
             voice_client: discord.VoiceClient = interaction.guild.voice_client
-            options = self.music_setting.get('options', '-ar 48000 -ac 2')
-            before_options = self.music_setting.get('before_options', None)
+            options = self.music_setting.options
+            before_options = self.music_setting.before_options
             
             if voice_client.is_playing():
                 voice_client.stop()
@@ -97,7 +98,7 @@ class RadioSelectView(discord.ui.View):
 
             # Update message with final state
             embed = discord.Embed(
-                title=f"✅ | 已選擇電台：{selected_station['emoji']} {self.select.values[0]} By {selected_station['description']}",
+                title=f"✅ | 已選擇電台：{selected_station.emoji} {self.select.values[0]} By {selected_station.description}",
                 color=discord.Color.blue()
             )
 
@@ -110,26 +111,26 @@ class RadioSelectView(discord.ui.View):
             # Send control view
             embed = discord.Embed(
                 title="🎵 | 正在播放音樂",
-                description=f"**[{self.select.values[0]}]({selected_station['url']})**",
+                description=f"**[{self.select.values[0]}]({selected_station.url})**",
                 color=discord.Color.blue()
             )
 
-            embed.add_field(name="上傳頻道", value=f"> {selected_station['description']}", inline=True)
+            embed.add_field(name="上傳頻道", value=f"> {selected_station.description}", inline=True)
             embed.add_field(name="播放時長", value=f"> 直播", inline=True)
             embed.add_field(name="觀看次數", value=f"> 直播", inline=True)
             embed.add_field(name="播放清單", value="> 清單為空", inline=False)
 
-            thumbnail = self.radio_cog.youtube.get_thumbnail_url(extract_youtube_id(selected_station['url']))
+            thumbnail = self.radio_cog.youtube.get_thumbnail_url(extract_youtube_id(selected_station.url))
             embed.set_thumbnail(url=thumbnail)
             embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
 
             # Create and set current song info 
             self.radio_cog.current_song = {
                 "title": self.select.values[0],
-                "url": selected_station['url'],
+                "url": selected_station.url,
                 "duration": float('inf'),  # Live stream
                 "thumbnail": thumbnail,
-                "channel": selected_station['description']
+                "channel": selected_station.description
             }
 
             # Create control view

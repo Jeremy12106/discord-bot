@@ -1,18 +1,13 @@
-import os
-from googleapiclient.discovery import build
 from loguru import logger
-
-# 讀取 API 金鑰與 CSE ID
-MY_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY")
-MY_CSE_ID = os.getenv("GOOGLE_SEARCH_ENGINE_ID")
+from service.google_search_api import build_google_search_service, execute_google_search
 
 def google_search(query, num_results=5):
-    num_results = min(num_results, 5)  # 限制最大 10 筆
+    num_results = min(num_results, 5)
     logger.info(f"[搜尋] Google 關鍵字搜尋：{query}")
 
     try:
-        service = build("customsearch", "v1", developerKey=MY_API_KEY)
-        res = service.cse().list(q=query, cx=MY_CSE_ID, num=num_results).execute()
+        service = build_google_search_service()
+        res = execute_google_search(service, query, num_results)
         results = res.get('items', [])
     except Exception as e:
         logger.error(f"[搜尋] 發生錯誤: {e}")
@@ -40,11 +35,4 @@ def google_search(query, num_results=5):
     return search_results
 
 def truncate_text(text, length=256):
-    """ 截短過長文字，避免內容過長 """
     return text[:length] + "..." if len(text) > length else text
-
-# 測試搜尋
-if __name__ == "__main__":
-    query = ""
-    results = google_search(query)
-    print(results)

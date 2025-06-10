@@ -2,7 +2,7 @@ import os
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
 
-from ..utils.env_loader import GEMINI_API_KEY
+from utils.env_loader import GEMINI_API_KEY
 
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"

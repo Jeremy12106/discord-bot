@@ -3,11 +3,10 @@ import json
 import datetime
 from loguru import logger
 
-MEMORY_PATH = "assets/data/memory"
-os.makedirs(MEMORY_PATH, exist_ok=True)
+from utils.path_manager import MEMORY_DIR
 
 def get_memory(channel_id, num_memories=5):
-    file_path = os.path.join(MEMORY_PATH, f"{channel_id}.json")
+    file_path = os.path.join(MEMORY_DIR, f"{channel_id}.json")
     if not os.path.exists(file_path):
         return None
     
@@ -28,7 +27,7 @@ def get_memory(channel_id, num_memories=5):
         return None
 
 def save_memory(channel_id, user_nick, user_input, search_results, response, max_memories=100):
-    file_path = os.path.join(MEMORY_PATH, f"{channel_id}.json")
+    file_path = os.path.join(MEMORY_DIR, f"{channel_id}.json")
     memories = []
     
     if os.path.exists(file_path):

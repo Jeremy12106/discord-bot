@@ -8,6 +8,7 @@ config/bot_config.json
 config/music_config.json
 config/bot_config.yml
 config/music_config.yml
+config/config.yml
 test
 log
 notes.md
