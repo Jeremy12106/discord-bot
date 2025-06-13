@@ -93,13 +93,14 @@ class YouTubeManager:
             'quiet': True,
             'extract_flat': False
         }
+        url = str(url).strip()
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 return info['url'] if 'url' in info else None
-        except:
-            logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 獲取音訊串流URL失敗")
-            return None    
+        except Exception as e:
+            logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 獲取音訊串流URL失敗: {e}")
+            return None
 
 
     # async def download_audio(self, url, folder, interaction):

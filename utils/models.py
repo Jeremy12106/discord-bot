@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, List, Any
-from pydantic import BaseModel, AnyUrl, Field
+from pydantic import BaseModel, Field
 
 class GPTAPI(str, Enum):
     gemini = 'gemini'
@@ -35,7 +35,7 @@ class MusicSettings(BaseModel):
 
 class RadioStation(BaseModel):
     name: str
-    url: AnyUrl
+    url: str
     description: Optional[str] = Field(default=None)
     emoji: Optional[str] = Field(default=None)
 
@@ -45,10 +45,13 @@ class Config(BaseModel):
     music: MusicSettings
     radio_stations: List[RadioStation]
 
+    def get_station_by_name(self, target_name: str) -> Optional[RadioStation]:
+        return next((s for s in self.radio_stations if s.name == target_name), None)
+
 class VideoInfo(BaseModel):
     file_path: str
     title: str
-    url: AnyUrl
+    url: str
     duration: int
     video_id: str
     author: str

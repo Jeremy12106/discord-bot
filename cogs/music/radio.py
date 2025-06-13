@@ -76,7 +76,7 @@ class RadioSelectView(discord.ui.View):
     async def select_callback(self, interaction: discord.Interaction):
         try:
             await interaction.response.defer(ephemeral=False)
-            selected_station: RadioStation = self.radio_cog.radio_stations[self.select.values[0]]
+            selected_station = config.get_station_by_name(self.select.values[0])
             
             # Get stream URL and setup audio
             stream_url = await self.radio_cog.youtube.get_stream_audio(selected_station.url, interaction)
@@ -128,7 +128,7 @@ class RadioSelectView(discord.ui.View):
             self.radio_cog.current_song = {
                 "title": self.select.values[0],
                 "url": selected_station.url,
-                "duration": float('inf'),  # Live stream
+                "duration": "stream",  # Live stream
                 "thumbnail": thumbnail,
                 "channel": selected_station.description
             }
