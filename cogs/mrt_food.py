@@ -7,11 +7,11 @@ from loguru import logger
 from discord.ext import commands
 from discord import app_commands
 
-PROJECT_ROOT = os.getcwd()
+from utils.path_manager import MRT_DIR
+from utils.file_manager import FileManager
 
 class MRT:
-    def __init__(self, data_path=f'{PROJECT_ROOT}/assets/data/mrt_food'):
-        self.data_path = data_path
+    def __init__(self):
         self.stations = self.load_stations()
         self.ramen_shops = self.load_ramen_shops()
 
@@ -27,35 +27,36 @@ class MRT:
 
     def load_stations(self) -> dict:
         """載入捷運線對應的站資料"""
-        stations_file = f"{self.data_path}/stations.json"
-        with open(stations_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        data = FileManager.load_json_data(MRT_DIR, "stations.json")
+        return data if data else {}
 
     def load_ramen_shops(self):
         """載入每條捷運線的拉麵店推薦資料"""
         ramen_shops = {}
         lines = ['red_line', 'blue_line', 'yellow_line', 'brown_line', 'green_line', 'orange_line']
         for line in lines:
-            ramen_file = f"{self.data_path}/{line}.json"
-            with open(ramen_file, 'r', encoding='utf-8') as f:
-                ramen_shops[line] = json.load(f)
+            data = FileManager.load_json_data(MRT_DIR, f"{line}.json")
+            if data:
+                ramen_shops[line] = data
+            else:
+                logger.warning(f"[拉麵資料] 未載入 {line}.json，檔案可能不存在或格式錯誤")
         return ramen_shops
 
     def recommend_ramen(self, station_name):
         """根據站名名稱推薦拉麵店"""
         for line, stations in self.stations.items():
             if station_name in stations:
-                line = self.line_mapping.get(line)
+                mapped_line = self.line_mapping.get(line)
                 try:
-                    ramen_list = self.ramen_shops[line].get(station_name)
+                    ramen_list = self.ramen_shops.get(mapped_line, {}).get(station_name)
                     if ramen_list:
                         ramen = random.choice(ramen_list)
                         query = urllib.parse.quote(f"{station_name} {ramen} 拉麵")
                         return f"{ramen}好吃\nhttps://www.google.com/search?q={query}"
                     else:
                         return f"{station_name}還沒有推薦的拉麵店。"
-                except  Exception:
-                    logger.error(f"查詢 {station_name} 時，發生錯誤: {Exception}")
+                except Exception as e:
+                    logger.error(f"查詢 {station_name} 時發生錯誤: {e}")
                     return f"發生錯誤!?"
         return f"我只知道台北拉麵的資訊"
 

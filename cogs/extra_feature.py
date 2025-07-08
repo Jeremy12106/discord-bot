@@ -1,5 +1,3 @@
-import os
-import json
 import random
 import discord
 from loguru import logger
@@ -7,15 +5,14 @@ from discord import app_commands
 from discord.ext import commands
 
 from discord_bot import config
-
-PROJECT_ROOT = os.getcwd()
-PERSONALITY_FOLDER = os.path.join(PROJECT_ROOT, "assets/data/personality")
-os.makedirs(PERSONALITY_FOLDER, exist_ok=True)
+from utils.file_manager import FileManager
+from utils.path_manager import PERSONALITY_DIR
+from .llm import LLMService
 
 class Feature(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.personality = config.bot_config.get("personality", None)
+        self.personality = config.llm.personality
         
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
@@ -57,31 +54,34 @@ class Feature(commands.Cog):
         """
         設定頻道專屬的豆白個性。
         """
+        filename = f"{interaction.channel.id}.json"
         data = {"personality": personality}
-        file_path = os.path.join(PERSONALITY_FOLDER, f"{interaction.channel.id}.json")
-        with open(file_path, "w", encoding="utf-8-sig") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        
+        FileManager.save_json_data(PERSONALITY_DIR, filename, data)
 
-        logger.info(f"[個性] 伺服器 ID: {interaction.guild.id}, 頻道 ID: {interaction.channel.id},  使用者名稱: {interaction.user.name}, 設定個性: {personality}")
+        logger.info(f"[個性] 伺服器 ID: {interaction.guild.id}, 頻道 ID: {interaction.channel.id}, 使用者名稱: {interaction.user.name}, 設定個性: {personality}")
         embed = discord.Embed(title="🐶 | 個性設定成功！", description=f"> 新個性：{personality}", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
-    
+
+
     @app_commands.command(name="check_personality", description="查看頻道專屬的豆白個性")
     async def check_personality(self, interaction: discord.Interaction):
         """
         查看頻道專屬的豆白個性。
         """
-        file_path = os.path.join(PERSONALITY_FOLDER, f"{interaction.channel.id}.json")
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8-sig") as f:
-                data = json.load(f)
-            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> {data['personality']}", color=discord.Color.blue())
+        filename = f"{interaction.channel.id}.json"
+        data = FileManager.load_json_data(PERSONALITY_DIR, filename)
+
+        if data and "personality" in data:
+            description = f"> {data['personality']}"
         else:
-            embed = discord.Embed(title="🐶 | 頻道專屬個性", description=f"> 使用預設個性: {self.personality}", color=discord.Color.blue())
+            description = f"> 使用預設個性: {self.personality}"
+
+        embed = discord.Embed(title="🐶 | 頻道專屬個性", description=description, color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
 
     @commands.command(name="燒魚")
-    async def sauyu(self, ctx):
+    async def sauyu(self, ctx: commands.Context):
         async with ctx.typing():
             await ctx.send("燒魚燒魚燒魚")
 
@@ -95,7 +95,7 @@ class UltimateNumberGame(commands.Cog):
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @commands.command(name="終極密碼")
-    async def start_game(self, ctx):
+    async def start_game(self, ctx: commands.Context):
         async with ctx.typing():
             if self.game_active:
                 await ctx.send("遊戲已經在進行中！請先完成當前的遊戲。")
@@ -108,7 +108,7 @@ class UltimateNumberGame(commands.Cog):
             await ctx.send("🎲 | 終極密碼遊戲開始！\n範圍：1 ~ 100\n請輸入 `豆白 guess <數字>` 來猜數字")
 
     @commands.command(name="guess")
-    async def guess(self, ctx, number: int):
+    async def guess(self, ctx: commands.Context, number: int):
         async with ctx.typing():
             if not self.game_active:
                 await ctx.send("目前沒有進行中的遊戲，請輸入 `豆白 終極密碼` 來開始一場遊戲！")
@@ -129,7 +129,7 @@ class UltimateNumberGame(commands.Cog):
                 await ctx.send(f"🔼 | 太大了！新的範圍是 {self.lower_bound} ~ {self.upper_bound}。")
 
     @commands.command(name="endgame")
-    async def end_game(self, ctx):
+    async def end_game(self, ctx: commands.Context):
         async with ctx.typing():
             if not self.game_active:
                 await ctx.send("目前沒有進行中的遊戲！")
@@ -141,7 +141,7 @@ class UltimateNumberGame(commands.Cog):
 class SeaTurtleGame(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.llm = bot.get_cog('LLMService')
+        self.llm: LLMService = bot.get_cog('LLMService')
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
     @app_commands.command(name="soup", description="海龜湯題目產生器")

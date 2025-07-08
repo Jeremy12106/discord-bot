@@ -1,19 +1,11 @@
 import os
-import json
 import asyncio
 import discord
-from dotenv import load_dotenv
 from discord.ext import commands
 from loguru import logger
 
-from config.config import ConfigManager
-
-# 載入設定檔
-config = ConfigManager()
-
-# 載入環境變數
-load_dotenv(override=True)
-TOKEN = os.getenv("DISCORD_TOKEN")
+from utils.env_loader import DISCORD_TOKEN
+from utils.config_loader import config
 
 # 設定系統日誌
 log_path = "./log/discord_bot.log"
@@ -25,7 +17,7 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(command_prefix=config.bot_config['prefix'], help_command=None, intents=intents)
+bot = commands.Bot(command_prefix=config.bot.prefix, help_command=None, intents=intents)
 
 status_dict = {
     'online': discord.Status.online,
@@ -37,17 +29,17 @@ status_dict = {
 @bot.event
 async def on_ready():
     logger.info(f"已成功登入為 {bot.user}！")
-    game = discord.Game(config.bot_config['activity'])
+    game = discord.Game(config.bot.activity)
     await bot.tree.sync()
-    await bot.change_presence(status=status_dict[config.bot_config['status']], activity=game)
+    await bot.change_presence(status=status_dict[config.bot.status], activity=game)
 
 @bot.command()
-async def hello(ctx):
+async def hello(ctx: commands.Context):
     async with ctx.typing():
         await ctx.send("哈囉！我是你最好的朋友！")
 
 @bot.command()
-async def ping(ctx):
+async def ping(ctx: commands.Context):
     async with ctx.typing():
         response = f"Pong! 延遲為 {round(bot.latency * 1000)}ms"
         logger.info(f"[Ping] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {ctx.message.content}, bot 輸出: {response}")
@@ -74,7 +66,7 @@ async def load_extensions():
 async def main():
     async with bot:
         await load_extensions()
-        await bot.start(TOKEN)
+        await bot.start(DISCORD_TOKEN)
 
 if __name__ == "__main__":
     try:

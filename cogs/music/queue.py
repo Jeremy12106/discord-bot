@@ -1,17 +1,20 @@
 import os
 import asyncio
+from pathlib import Path
 from typing import Tuple
+
+from utils.path_manager import MUSIC_TEMP
 
 # 定義每個伺服器的播放清單
 guild_queues = {}
 
-def get_guild_queue_and_folder(guild_id) -> Tuple[asyncio.Queue, str]:
+def get_guild_queue_and_folder(guild_id: int) -> Tuple[asyncio.Queue, Path]:
     """確保伺服器有獨立的資料夾和播放清單"""
     if guild_id not in guild_queues:
         guild_queues[guild_id] = asyncio.Queue()
 
     # 為每個伺服器設定獨立的下載資料夾
-    guild_folder = f"./assets/music_temp/{guild_id}"
+    guild_folder = MUSIC_TEMP / str(guild_id)
     os.makedirs(guild_folder, exist_ok=True)
     return guild_queues[guild_id], guild_folder
 
@@ -22,7 +25,7 @@ def clear_guild_queue(guild_id):
 
 async def copy_queue(guild_id):
     """複製隊列內容而不消耗原隊列"""
-    queue = guild_queues.get(guild_id)
+    queue: asyncio.Queue = guild_queues.get(guild_id)
     if not queue:
         return [], asyncio.Queue()
         

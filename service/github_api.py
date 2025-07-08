@@ -1,13 +1,14 @@
-import os
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage
 from azure.ai.inference.models import UserMessage
 from azure.core.credentials import AzureKeyCredential
 
+from utils.env_loader import GITHUB_API_KEY
+
 class GithubAPI():
     def __init__(self, model):
         self.model = model
-        self.api_key = os.getenv('GITHUB_API_KEY', None)
+        self.api_key = GITHUB_API_KEY
 
     def get_response(self, prompt, temperature):
         client = ChatCompletionsClient(
