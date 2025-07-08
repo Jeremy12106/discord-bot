@@ -52,9 +52,9 @@ class VideoInfo(BaseModel):
     file_path: str
     title: str
     url: str
-    duration: int
+    duration: Optional[int]
     video_id: str
     author: str
-    views: int
+    views: Optional[int]
     requester: Any
     user_avatar: Any

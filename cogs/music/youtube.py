@@ -31,13 +31,13 @@ class YouTubeManager:
                 info = ydl.extract_info(url, download=False)
             
             video_info = VideoInfo(
-                file_path=info['url'],
-                title=info['title'],
+                file_path = info.get('url'),
+                title = info.get('title'),
                 url=url,
-                duration=info['duration'],
-                video_id=info['id'],
-                author=info['uploader'],
-                views=info['view_count'],
+                duration = info.get('duration', None),
+                video_id = info.get('id'),
+                author = info.get('uploader'),
+                views = info.get('view_count', None),
                 requester=interaction.user,
                 user_avatar=interaction.user.avatar.url if interaction.user.avatar else None
             )

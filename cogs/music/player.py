@@ -151,12 +151,20 @@ class YTMusic(commands.Cog):
                     description=f"**[{song.title}]({song.url})**",
                     color=discord.Color.blue()
                 )
+                if song.duration:
+                    minutes, seconds = divmod(song.duration, 60)
+                    duration = f"{minutes:02d}:{seconds:02d}"
+                else:
+                    duration = "直播"
                 
-                minutes, seconds = divmod(song.duration, 60)
+                if song.views:
+                    views = f"{int(song.views):,}"
+                else:
+                    views = "直播"
                 embed.add_field(name="上傳頻道", value=f"> {song.author}", inline=True)
-                embed.add_field(name="播放時長", value=f"> {minutes:02d}:{seconds:02d}", inline=True)
-                embed.add_field(name="觀看次數", value=f"> {int(song.views):,}", inline=True)
-                if self.music_setting.display_progress_bar:
+                embed.add_field(name="播放時長", value=f"> {duration}", inline=True)
+                embed.add_field(name="觀看次數", value=f"> {views}", inline=True)
+                if self.music_setting.display_progress_bar and song.duration:
                     embed.add_field(name="播放進度", value=f"> 00:00 ▱▱▱▱▱▱▱▱▱▱ {minutes:02d}:{seconds:02d}", inline=False)
                 embed.add_field(name="播放清單", value="> 清單為空", inline=False)
                 
@@ -178,7 +186,7 @@ class YTMusic(commands.Cog):
                 view.current_position = 0
                 
                 # 開始更新進度
-                if self.music_setting.display_progress_bar:
+                if self.music_setting.display_progress_bar and song.duration:
                     if view.update_task:
                         view.update_task.cancel()
                     view.update_task = self.bot.loop.create_task(view.update_progress(song.duration))
