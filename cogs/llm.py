@@ -13,6 +13,7 @@ from .gpt.memory import get_memory, save_memory
 from discord_bot import config
 from utils.env_loader import GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_ENGINE_ID, GEMINI_API_KEY, GITHUB_API_KEY
 from utils.path_manager import PERSONALITY_DIR
+from utils.file_manager import FileManager
 
 class LLMService(commands.Cog):
     def __init__(self, bot):
@@ -37,12 +38,11 @@ class LLMService(commands.Cog):
     def get_response(self, chanel_id, user_nick, text, search_results=None, memory=None):
         """豆白的回應"""
         # 檢查是否有頻道專屬的個性
-        file_path = os.path.join(PERSONALITY_DIR, f"{chanel_id}.json")
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8-sig") as file:
-                data: dict = json.load(file)
-                personality = data.get("personality", None)
-            prompt = get_prompt(self.system_prompt, user_nick, text, personality, search_results, memory)
+        filename = f"{chanel_id}.json"
+        data = FileManager.load_json_data(PERSONALITY_DIR, filename)
+
+        if data and "personality" in data:
+            prompt = get_prompt(self.system_prompt, user_nick, text, data["personality"], search_results, memory)
         else:
             prompt = get_prompt(self.system_prompt, user_nick, text, self.personality, search_results, memory)
 
