@@ -8,7 +8,7 @@ os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["GLOG_minloglevel"] = "3"
 
 class GeminiAPI():
-    def __init__(self, model='gemini-2.0-flash'):
+    def __init__(self, model):
         self.model = model
         self.api_key = GEMINI_API_KEY
         genai.configure(api_key=self.api_key)
