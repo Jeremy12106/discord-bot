@@ -7,6 +7,7 @@ from loguru import logger
 
 from ..queue import guild_queues
 from utils.config_loader import config
+from utils.models import VideoInfo
 
 if TYPE_CHECKING:
     from ..player import YTMusic
@@ -123,23 +124,23 @@ class MusicControlView(discord.ui.View):
             await interaction.response.send_message("目前沒有歌曲在播放清單中", ephemeral=True)
             return
 
+        await interaction.response.defer()
         # 直接獲取隊列內容的副本而不修改原隊列
-        queue_copy = list(queue._queue)
+        queue_copy: list[VideoInfo] = list(queue._queue)
 
         # 更新播放清單到當前 embed
         if self.current_embed and self.message:
             queue_text = ""
             for i, item in enumerate(queue_copy, 1):
-                minutes, seconds = divmod(item["duration"], 60)
-                queue_text += f"{i}. {item['title']} | {minutes:02d}:{seconds:02d}\n"
-            
+                minutes, seconds = divmod(int(item.duration or 0), 60)
+                queue_text += f"{i}. {item.title} | {minutes:02d}:{seconds:02d}\n"
+
             if self.music_setting.display_progress_bar:
                 self.current_embed.set_field_at(4, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
             else:
                 self.current_embed.set_field_at(3, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
 
             await self.message.edit(embed=self.current_embed)
-            await interaction.response.defer()
         else:
             await interaction.response.send_message("無法更新播放清單", ephemeral=True)
 
