@@ -177,7 +177,7 @@ class YTMusic(commands.Cog):
                 # view.add_progress_select()
                 
                 # 發送新訊息
-                message = await interaction.followup.send(embed=embed, view=view)
+                message = await interaction.channel.send(embed=embed, view=view)
                 self.current_message = message
                 
                 # 設置視圖的訊息和 embed
@@ -194,11 +194,11 @@ class YTMusic(commands.Cog):
             except Exception as e:
                 logger.error(f"[音樂] 伺服器 ID： {interaction.guild.id}, 播放音樂時出錯： {e}")
                 embed = discord.Embed(title=f"❌ | 播放音樂時出錯", color=discord.Color.red())
-                await interaction.followup.send(embed=embed)
+                await interaction.channel.send(embed=embed)
                 await self.play_next(interaction)  # 嘗試播放下一首
         else:
             embed = discord.Embed(title="🌟 | 播放清單已播放完畢！", color=discord.Color.blue())
-            await interaction.followup.send(embed=embed)
+            await interaction.channel.send(embed=embed)
             self.current_message = None
 
             # 設置 10 分鐘計時器
