@@ -207,7 +207,7 @@ class YTMusic(commands.Cog):
                 if voice_client and voice_client.is_connected():
                     await voice_client.disconnect()
                     embed = discord.Embed(title=f"⏰ | 沒有人點音樂，我先去睡了！", color=discord.Color.orange())
-                    await interaction.followup.send(embed=embed)
+                    await interaction.channel.send(embed=embed)
                     logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 閒置超時，已自動離開語音頻道")
             
             self.disconnect_task = asyncio.create_task(disconnect_after_timeout())
