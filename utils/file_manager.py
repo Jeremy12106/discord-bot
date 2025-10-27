@@ -8,7 +8,7 @@ class FileManager:
         filename = filename if filename.endswith(".json") else filename + ".json"
         full_path = folder / filename
         try:
-            with open(full_path, "r", encoding="utf-8") as f:
+            with open(full_path, "r", encoding="utf-8-sig") as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"[FileManager] Failed to read {full_path}: {e}")
@@ -20,7 +20,7 @@ class FileManager:
         full_path = folder / filename
         full_path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with open(full_path, "w", encoding="utf-8") as f:
+            with open(full_path, "w", encoding="utf-8-sig") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
             logger.error(f"[FileManager] Failed to write {full_path}: {e}")
