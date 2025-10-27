@@ -10,9 +10,10 @@ from utils.path_manager import PERSONALITY_DIR
 from .llm import LLMService
 
 class Feature(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.personality = config.llm.personality
+        self.llm: LLMService = bot.get_cog('LLMService')
         
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
 
@@ -84,9 +85,22 @@ class Feature(commands.Cog):
     async def sauyu(self, ctx: commands.Context):
         async with ctx.typing():
             await ctx.send("燒魚燒魚燒魚")
+    
+    @commands.command(name="關注度")
+    async def attention_level(self, ctx: commands.Context):
+        if not ctx.message.reference:
+            await ctx.send("請回覆一則新聞來產生關注度！")
+            return
+        replied_message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        content = replied_message.content
+        
+        async with ctx.typing():
+            level = self.llm.get_attention_level(content)
+            logger.info(f"[關注度] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {content}, bot 輸出: {level}")
+            await ctx.send(f"本新聞關注度為 {level}！")
 
 class UltimateNumberGame(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.target = None
         self.lower_bound = None

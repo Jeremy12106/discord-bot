@@ -104,6 +104,22 @@ class LLMService(commands.Cog):
         response = self.gpt.get_response(prompt, temperature=0)
         return response
 
+    def get_attention_level(self, news_content):
+        """使用 LLM 評估新聞關注度"""
+        prompt = f"""
+        根據以下新聞內容，評估其關注度，並給出1到10的分數（1表示非常不重要，10表示非常重要）。請只回傳數字。
+
+        新聞內容：
+        {news_content}
+        """
+        response = self.gpt.get_response(prompt, temperature=0)
+        # 從回應中提取數字
+        match = re.search(r'\b([1-9]|10)\b', response)
+        if match:
+            return int(match.group(0))
+        else:
+            return "❗ 無法評估關注度"
+
     def get_seaturtle_question(self, directions):
         """使用 LLM 生成海龜湯題目與解答"""
         prompt = f"""
