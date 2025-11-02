@@ -131,9 +131,16 @@ class MusicControlView(discord.ui.View):
         # 更新播放清單到當前 embed
         if self.current_embed and self.message:
             queue_text = ""
-            for i, item in enumerate(queue_copy, 1):
+            max_display = 10
+            total_songs = len(queue_copy)
+
+            for i, item in enumerate(queue_copy[:max_display], 1):
                 minutes, seconds = divmod(int(item.duration or 0), 60)
                 queue_text += f"{i}. {item.title} | {minutes:02d}:{seconds:02d}\n"
+
+            # 如果還有更多歌曲沒顯示
+            if total_songs > max_display:
+                queue_text += f"> 以及 {total_songs - max_display} 首歌曲在序列中...\n"
 
             if self.music_setting.display_progress_bar:
                 self.current_embed.set_field_at(4, name="📜 播放清單", value=queue_text if queue_text else "> 清單為空", inline=False)
