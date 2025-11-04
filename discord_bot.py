@@ -50,7 +50,7 @@ async def load_extensions():
     all_cogs = os.listdir("./cogs")
     
     # 優先載入
-    priority_cogs = ['llm.py']
+    priority_cogs = ['llm.py', 'quote.py']
     for filename in priority_cogs:
         if filename in all_cogs:
             await bot.load_extension(f"cogs.{filename[:-3]}")
