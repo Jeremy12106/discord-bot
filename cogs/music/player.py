@@ -22,6 +22,7 @@ class YTMusic(commands.Cog):
         self.current_song = None
         self.current_message = None
         self.music_setting = config.music
+        self.is_playing = False
         
         self.youtube = YouTubeManager(time_limit=self.music_setting.time_limit)
         logger.info(f"功能 {self.__class__.__name__} 初始化載入成功！")
@@ -66,7 +67,8 @@ class YTMusic(commands.Cog):
 
         # 播放音樂
         voice_client = interaction.guild.voice_client
-        if not voice_client.is_playing():
+        if not voice_client.is_playing() and not self.is_playing:
+            self.is_playing = True
             await self.play_next(interaction)
 
     @play.autocomplete("song")
@@ -124,6 +126,10 @@ class YTMusic(commands.Cog):
         voice_client: discord.VoiceClient = interaction.guild.voice_client
         if not voice_client or not voice_client.is_connected():
             return
+
+        if self.is_playing:
+            return
+        self.is_playing = True
         
         # 取消現有的計時器(如果存在)
         if hasattr(self, 'disconnect_task'):
@@ -201,7 +207,7 @@ class YTMusic(commands.Cog):
             await interaction.channel.send(embed=embed)
             self.current_message = None
 
-            # 設置 10 分鐘計時器
+            # 設置 5 分鐘計時器
             async def disconnect_after_timeout():
                 await asyncio.sleep(300)  # 5 minutes
                 if voice_client and voice_client.is_connected():
@@ -213,6 +219,7 @@ class YTMusic(commands.Cog):
             self.disconnect_task = asyncio.create_task(disconnect_after_timeout())
 
     async def handle_after_play(self, interaction: discord.Interaction, file_path):
+        self.is_playing = False
         try:
             if os.path.exists(file_path):
                 await asyncio.sleep(1)
@@ -220,7 +227,9 @@ class YTMusic(commands.Cog):
                 logger.debug(f"[音樂] 伺服器 ID： {interaction.guild.id}, 刪除檔案成功！")
         except Exception as e:
             logger.warning(f"[音樂] 伺服器 ID： {interaction.guild.id}, 刪除檔案失敗： {e}")
-        await self.play_next(interaction)
+                
+        if not self.is_playing:
+            await self.play_next(interaction)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
