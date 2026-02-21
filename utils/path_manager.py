@@ -18,6 +18,7 @@ FONT = ASSETS / "font"
 IMAGE = ASSETS / "image"
 MYGO_DIR = IMAGE / "mygo"
 README_DIR = IMAGE / "readme"
+OMIKUJI_DIR = IMAGE / "Omikuji"
 
 # 音樂下載暫存
 MUSIC_TEMP = ASSETS / "music_temp"
@@ -27,7 +28,7 @@ MUSIC_TEMP = ASSETS / "music_temp"
 directories = [
     ASSETS, CONFIG,
     DATA, MEMORY_DIR, MRT_DIR, PERSONALITY_DIR,
-    DEBT_DIR, FONT, IMAGE, MYGO_DIR, README_DIR,
+    DEBT_DIR, FONT, IMAGE, MYGO_DIR, README_DIR, OMIKUJI_DIR,
     MUSIC_TEMP
 ]
 

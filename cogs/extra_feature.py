@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from discord_bot import config
 from utils.file_manager import FileManager
-from utils.path_manager import PERSONALITY_DIR
+from utils.path_manager import PERSONALITY_DIR, OMIKUJI_DIR
 from .llm import LLMService
 
 class Feature(commands.Cog):
@@ -98,6 +98,21 @@ class Feature(commands.Cog):
             level = self.llm.get_attention_level(content)
             logger.info(f"[關注度] 伺服器 ID: {ctx.guild.id}, 使用者名稱: {ctx.author.name}, 使用者輸入: {content}, bot 輸出: {level}")
             await ctx.send(f"本新聞關注度為 {level}！")
+    
+    @commands.command(name="抽籤")
+    async def draw_omikuji(self, ctx: commands.Context):
+        """
+        抽籤功能。
+        """
+        omikuji_images = list(OMIKUJI_DIR.glob("*.png")) + list(OMIKUJI_DIR.glob("*.jpg"))
+        if not omikuji_images:
+            await ctx.send("目前沒有可用的籤語圖片！")
+            return
+
+        # 隨機選擇一個籤語圖片
+        selected_image = random.choice(omikuji_images)
+        await ctx.send(file=discord.File(selected_image))
+
 
 class UltimateNumberGame(commands.Cog):
     def __init__(self, bot: commands.Bot):
