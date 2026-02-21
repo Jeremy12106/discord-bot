@@ -4,10 +4,10 @@ google-generativeai==0.8.3
 loguru==0.7.2
 pillow==12.1.1
 python-dotenv==1.0.1
-pytubefix==10.3.6
+pytubefix==10.3.8
 pynacl==1.6.2
 PyYAML==6.0.2
 requests==2.32.4
 youtube-search==2.1.2
-yt-dlp==2025.12.8
+yt-dlp==2026.2.4
 google-api-python-client==2.154.0
