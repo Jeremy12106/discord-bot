@@ -208,6 +208,7 @@ class YTMusic(commands.Cog):
                 await self.play_next(interaction)  # 嘗試播放下一首
         else:
             embed = discord.Embed(title="🌟 | 播放清單已播放完畢！", color=discord.Color.blue())
+            self.is_playing = False
             await interaction.channel.send(embed=embed)
             self.current_message = None
 
