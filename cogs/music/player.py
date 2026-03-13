@@ -47,8 +47,13 @@ class YTMusic(commands.Cog):
                         radio_cog.current_message = None
                     
             # 連接語音頻道
-            if interaction.guild.voice_client is None:
-                await channel.connect()
+            try:
+                if interaction.guild.voice_client is None:
+                    await channel.connect()
+                    logger.info(f"[音樂] 伺服器 ID： {interaction.guild.id}, 成功連接語音頻道")
+            except Exception as e:
+                logger.error(f"[音樂] 伺服器 ID： {interaction.guild.id}, 連接語音頻道失敗：{e}")
+        
         else:
             embed = discord.Embed(title="❌ | 請先加入語音頻道！", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -68,7 +73,6 @@ class YTMusic(commands.Cog):
         # 播放音樂
         voice_client = interaction.guild.voice_client
         if not voice_client.is_playing() and not self.is_playing:
-            self.is_playing = True
             await self.play_next(interaction)
 
     @play.autocomplete("song")
@@ -86,7 +90,7 @@ class YTMusic(commands.Cog):
                     for result in results[:max_results]
                 ]
             except Exception as e:
-                print(f"[音樂] 伺服器 ID： {interaction.guild.id}, Autocomplete 發生錯誤: {e}")
+                logger.error(f"[音樂] 伺服器 ID： {interaction.guild.id}, Autocomplete 發生錯誤: {e}")
         return []
 
     async def add_to_queue(self, interaction: discord.Interaction, url, is_deferred=False, stream=False):
