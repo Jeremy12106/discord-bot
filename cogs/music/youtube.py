@@ -43,9 +43,23 @@ class YouTubeManager:
             )
 
             return video_info, None
+        
         except Exception as e:
+            error_msg = str(e)
             logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
-            return None, "下載失敗"
+
+            # 檢查是否包含特定關鍵字
+            if any(k in error_msg for k in ["int() argument must be a string", "Sign in to confirm", "detected as a bot"]):
+                return None, "下載失敗：套件過時了，請通知開發者更新套件~"
+            
+            elif any(k in error_msg for k in ["Video unavailable", "not available in your region"]):
+                return None, "下載失敗：該影音在所在的地區不可用"
+            
+            elif "copyright" in error_msg:
+                return None, "下載失敗：吃到版權砲了!"
+            
+            else:
+                return None, "下載失敗"
 
     async def download_audio(self, url, folder, interaction: discord.Interaction):
         """下載YouTube影片的音訊"""
@@ -80,8 +94,21 @@ class YouTubeManager:
             return video_info, None
 
         except Exception as e:
+            error_msg = str(e)
             logger.error(f"[音樂] 伺服器 ID: {interaction.guild.id}, 下載失敗: {e}")
-            return None, "下載失敗"
+
+            # 檢查是否包含特定關鍵字
+            if any(k in error_msg for k in ["int() argument must be a string", "Sign in to confirm", "detected as a bot"]):
+                return None, "下載失敗：套件過時了，請通知開發者更新套件~"
+            
+            elif any(k in error_msg for k in ["Video unavailable", "not available in your region"]):
+                return None, "下載失敗：該影音在所在的地區不可用"
+            
+            elif "copyright" in error_msg:
+                return None, "下載失敗：吃到版權砲了!"
+            
+            else:
+                return None, "下載失敗"
 
     def get_thumbnail_url(self, video_id):
         """獲取影片縮圖URL"""
